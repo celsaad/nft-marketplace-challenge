@@ -45,7 +45,7 @@ export type AttemptAction<Q extends AttemptQuote> =
   | { type: 'startOver'; key: string }
 
 /** Nothing was decided server-side, or we can't know: resending the same key is safe. */
-const UNKNOWN_OUTCOME: readonly ApiErrorKind[] = ['timeout', 'network', 'transient']
+const UNKNOWN_OUTCOME: ReadonlySet<ApiErrorKind> = new Set(['timeout', 'network', 'transient'])
 
 export function startAttempt<Q extends AttemptQuote>(key: string): Attempt<Q> {
   return { status: 'reviewing', key, quote: null, nextQuote: null, orderId: null, error: null }
@@ -79,7 +79,7 @@ export function attemptReducer<Q extends AttemptQuote>(
     case 'submitFailed':
       if (state.status !== 'submitting') return state
       if (action.error === 'quoteStale') return { ...state, status: 'quoteChanged', nextQuote: null }
-      if (UNKNOWN_OUTCOME.includes(action.error))
+      if (UNKNOWN_OUTCOME.has(action.error))
         return { ...state, status: 'recovering', error: action.error }
       return { ...state, status: 'failed', error: action.error }
     case 'retry':
