@@ -65,6 +65,17 @@
           }
         ]
       }
+    },
+    {
+      "files": ["src/ui/primitives/**"],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off",
+        "jsx-a11y/anchor-has-content": "off",
+        "react/set-state-in-effect": "off",
+        "react/jsx-no-constructed-context-values": "off",
+        "no-underscore-dangle": "off",
+        "no-shadow": "off"
+      }
     }
   ]
 }

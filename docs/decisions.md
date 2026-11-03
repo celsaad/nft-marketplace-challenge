@@ -19,6 +19,7 @@ Every decision made while planning, in compact form. Read this before you start 
 - Vercel hosting with a rewrite to the single-page app. Deploys from `main`.
 - GitHub Actions runs typecheck, lint, Vitest and the functional Playwright tests (visual tests skipped on Linux).
 - Fonts: Roboto Mono (400/500/700) bundled with the app through `@fontsource`.
+- UI components come from the **shadcn CLI** (4.22.1) and live in `src/ui/primitives/`. That folder is treated as vendored: a few lint rules are off there only. `prefer-tag-over-role` would flag the WAI-ARIA carousel and breadcrumb patterns, `anchor-has-content` is a false positive because content arrives through props, and the rest are upstream style nits. The CLI's extra dependencies (`cn`, published 2026-11-02, too recent to pin; `next-themes`) were not installed: `cn()` is written locally with `clsx` and `tailwind-merge`, and the toast theme is fixed to dark.
 - Mocking: `msw@2.15.0` pinned, with `@mswjs/socket.io-binding@0.2.0` and `socket.io-client@4.8.x`. MSW 3 also passed the spike, but it falls outside the binding's supported peer range. See [ADR 0001](./adr/0001-single-in-browser-mock-backend.md) for the four conditions the spike found.
 
 ## State management
