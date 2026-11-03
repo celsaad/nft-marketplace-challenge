@@ -7,8 +7,7 @@ test-results/
 blob-report/
 .lighthouseci/
 *.local
-.env*
-!.env.example
+.env*.local
 .DS_Store
 # raw Figma API dumps (regenerable, large)
 design/*.json

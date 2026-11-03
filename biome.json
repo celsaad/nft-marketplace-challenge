@@ -1,0 +1,45 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": ["**", "!src/routeTree.gen.ts", "!public/mockServiceWorker.js", "!design", "!docs/lighthouse"]
+  },
+  "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 110 },
+  "javascript": { "formatter": { "quoteStyle": "single", "semicolons": "asNeeded" } },
+  "css": { "parser": { "tailwindDirectives": true } },
+  "linter": {
+    "rules": {
+      "preset": "recommended",
+      "suspicious": { "noConsole": { "level": "warn", "options": { "allow": ["error", "warn"] } } }
+    }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "src/app/**",
+        "src/features/**",
+        "src/routes/**",
+        "src/ui/**",
+        "src/lib/**",
+        "src/contracts/**"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                    "message": "App code must never import the mock backend. Only src/main.tsx may load it (ADR 0001, module-design §Layout)."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
