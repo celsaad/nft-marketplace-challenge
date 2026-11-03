@@ -13,3 +13,7 @@ blob-report/
 design/*.json
 # throwaway prototypes live on prototype/* branches, never on main
 prototypes/
+
+# agent worktrees and router cache
+.claude/
+.tanstack/

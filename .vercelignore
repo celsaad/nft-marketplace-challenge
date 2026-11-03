@@ -1,0 +1,9 @@
+.claude
+.tanstack
+node_modules
+dist
+design
+e2e
+test-results
+playwright-report
+.lighthouseci
