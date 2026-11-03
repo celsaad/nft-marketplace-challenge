@@ -1,4 +1,5 @@
 // Deterministic seed data. Credentials are fictional and documented in the README.
+import { seedCatalog } from './catalog-fixtures'
 import { hashPassword } from './password'
 import type { CollectorRecord, WorldState } from './state'
 
@@ -33,5 +34,8 @@ export async function seedState(): Promise<WorldState> {
   return {
     collectors: { [ana.id]: ana, [bruno.id]: bruno },
     sessions: {},
+    nfts: seedCatalog(),
+    favorites: {},
+    carts: {},
   }
 }
