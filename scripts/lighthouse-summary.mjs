@@ -1,7 +1,8 @@
 // Reads the Lighthouse CI runs in docs/lighthouse/<profile>/ and writes docs/lighthouse/summary.md:
 // the MEDIAN of each category and of LCP/CLS/TBT over the 3 runs, per page and profile, plus the
-// tool versions and environment (spec §Performance).
-import { readFileSync, writeFileSync } from 'node:fs'
+// tool versions and environment (spec §Performance). Then it keeps only each page's representative
+// HTML report (as <profile>/<page>.html) and deletes the rest, so the repo doesn't carry every run.
+import { readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { arch, cpus, platform, release, totalmem } from 'node:os'
 import { join } from 'node:path'
 
@@ -16,6 +17,8 @@ const median = (values) => {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
 }
 const pageName = (url) => (new URL(url).pathname === '/' ? 'Home' : 'NFT detail')
+const fileName = (page) => `${page.toLowerCase().replace(/\s+/g, '-')}.html`
+const prune = []
 
 let lighthouseVersion = 'unknown'
 let chromeVersion = 'unknown'
@@ -36,7 +39,9 @@ for (const profile of PROFILES) {
       cls: report.audits['cumulative-layout-shift'].numericValue,
       tbt: report.audits['total-blocking-time'].numericValue,
       html: run.htmlPath,
+      representative: run.isRepresentativeRun,
     })
+    prune.push(run.jsonPath, run.htmlPath)
     byPage.set(key, list)
   }
   for (const [page, runs] of byPage) {
@@ -48,7 +53,7 @@ for (const profile of PROFILES) {
       lcp: median(runs.map((r) => r.lcp)),
       cls: median(runs.map((r) => r.cls)),
       tbt: median(runs.map((r) => r.tbt)),
-      report: runs[0].html,
+      report: (runs.find((r) => r.representative) ?? runs[0]).html,
     })
   }
 }
@@ -64,7 +69,7 @@ const lines = [
   '|---|---|---|---|---|---|---|---|---|',
   ...rows.map(
     (r) =>
-      `| ${r.profile} | ${r.page} | ${CATEGORIES.map((c) => mark(c, r.scores[c])).join(' | ')} | ${(r.lcp / 1000).toFixed(2)} s | ${r.cls.toFixed(3)} | ${Math.round(r.tbt)} ms |`,
+      `| ${r.profile} | [${r.page}](./${r.profile}/${fileName(r.page)}) | ${CATEGORIES.map((c) => mark(c, r.scores[c])).join(' | ')} | ${(r.lcp / 1000).toFixed(2)} s | ${r.cls.toFixed(3)} | ${Math.round(r.tbt)} ms |`,
   ),
   '',
   '## Environment',
@@ -76,4 +81,7 @@ const lines = [
   '',
 ]
 writeFileSync(join(ROOT, 'summary.md'), lines.join('\n'))
+for (const r of rows) renameSync(r.report, join(ROOT, r.profile, fileName(r.page)))
+for (const file of prune) rmSync(file, { force: true })
+for (const profile of PROFILES) rmSync(join(ROOT, profile, 'manifest.json'))
 console.log(lines.join('\n'))

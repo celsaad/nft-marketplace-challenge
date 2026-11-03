@@ -135,15 +135,39 @@ Na pasta `src/ui/primitives/` (componentes gerados pelo CLI do shadcn) algumas r
 
 ## 12. Performance
 
-_Resultados e análise: pendentes até a auditoria final. Serão preenchidos a partir de [docs/lighthouse/summary.md](./docs/lighthouse/summary.md)._
+Auditoria com Lighthouse CI (`pnpm lighthouse`, configs em `lighthouse/`): build otimizado, cenário padrão, 3 execuções por página e perfil, mediana. Relatórios e ambiente em [docs/lighthouse/summary.md](./docs/lighthouse/summary.md).
 
-Já previsto: imagens em AVIF/WebP com `srcset` em 320/640/960 e proporção fixa (sem deslocamento de layout); a imagem principal com prioridade alta; rotas com code splitting; fonte servida localmente; Mock Lab carregado só depois que a página fica ociosa. O backend simulado roda no build auditado, porque o desafio proíbe simplificações só para a auditoria (ADR 0005); seu custo no primeiro carregamento será medido e relatado.
+| Perfil | Página | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS | TBT |
+|---|---|---|---|---|---|---|---|---|
+| mobile | Home | **72** ⚠️ | 100 | 100 | 100 | 5,21 s | 0,000 | 4 ms |
+| mobile | Detalhe do NFT | **76** ⚠️ | 100 | 100 | 100 | 4,55 s | 0,000 | 0 ms |
+| desktop | Home | 98 | 100 | 100 | 100 | 0,98 s | 0,000 | 0 ms |
+| desktop | Detalhe do NFT | 98 | 100 | 100 | 100 | 0,98 s | 0,004 | 0 ms |
+
+**Desktop atinge todas as metas. No mobile, Acessibilidade, Boas práticas e SEO atingem; Performance fica em 72–76, abaixo de 90.**
+
+Por que o mobile fica abaixo (perfil padrão do Lighthouse: 4G lento simulado, CPU 4× mais lenta):
+- O elemento de LCP é a imagem do primeiro card do catálogo. Ela só existe depois que a API do catálogo responde, e aqui a API é o backend simulado, que roda no navegador: o chunk dele (60 KB gzip) precisa baixar, executar e registrar o service worker antes da primeira requisição, e o cenário padrão ainda soma 150–400 ms de latência simulada. Em produção, com uma API real, esse chunk e o service worker não existiriam.
+- O primeiro paint (3,7 s) é limitado pelo próprio app: cerca de 200 KB gzip de JS antes do primeiro paint (React DOM, Zod 4, Axios, TanStack Router/Query, Radix), mais CSS e fontes, em um RTT simulado de 150 ms.
+- O backend simulado fica no build auditado de propósito: o enunciado proíbe simplificações só para a auditoria (ADR 0005).
+
+O que foi feito, medido antes e depois:
+- **Chunk do backend simulado de 173 KB para 60 KB gzip:** o MSW usa `tldts` (a lista de sufixos públicos) só para validar domínio de cookies; o app não usa cookies (token em header), então ela é trocada por um stub de 10 linhas (`src/mocks/tldts-stub.ts`).
+- **O app renderiza antes do backend simulado estar pronto:** o cliente HTTP e o cliente de tempo real esperam `backendReady`, então a ordem do ADR 0001 continua valendo (nenhuma requisição e nenhum socket.io-client antes do worker), mas o shell, as rotas e os skeletons aparecem enquanto o mock sobe.
+- **Primeira linha de cards** com carregamento imediato e prioridade alta (imagem de LCP).
+- **CLS no detalhe de 0,081 para 0,004:** `<main>` reserva a altura da tela, então o rodapé não salta quando o conteúdo chega.
+- **SEO de 92 para 100:** `robots.txt` (o rewrite de SPA servia o `index.html` no lugar dele).
+- Já existentes: imagens AVIF/WebP com `srcset` 320/640/960 e proporção fixa, rotas com code splitting, fonte local, Mock Lab carregado só com a página ociosa.
+
+Testado e descartado: `modulepreload` do chunk do mock (compete por banda com o JS do app e piorou o LCP) e adiar o mock para depois do primeiro frame (sem efeito).
+
+Próximos passos, se a meta mobile fosse obrigatória: trocar Zod por `zod/mini` no cliente, carregar sob demanda o menu da conta, os tooltips e os toasts, separar os dicionários por idioma e, com uma API real, pré-renderizar a home.
 
 ## 13. Decisões de UX e desvios do Figma
 
 O Figma define a identidade visual; o enunciado define o comportamento. Onde os dois não se encaixam, ou o Figma não desenhou algo:
 
-- **Login e cadastro** são rotas próprias (`/entrar`, `/cadastro`) desenhadas como o painel do Figma, para que `redirect` e `reason` fiquem na URL e sobrevivam a recarregar. _(Pendente: no desktop, mostrar a home esmaecida por trás, como no Figma.)_
+- **Login e cadastro** são rotas próprias (`/entrar`, `/cadastro`) desenhadas como o painel do Figma, para que `redirect` e `reason` fiquem na URL e sobrevivam a recarregar. No desktop, o painel aparece sobre a home esmaecida, como no Figma; a home por trás é uma cópia decorativa e inerte (hero e destaques).
 - **Cadastro** não tem campo de nome de exibição (o Figma não tem); o nome de usuário serve de nome de exibição até ser editado no perfil.
 - **Carteiras e perfil** seguem o Figma campo a campo. Uma carteira carrega os dados do comprador que o Figma desenha nela. Foi adicionada só uma dica de formato do endereço por rede.
 - **Catálogo:** campo de busca no topo da barra lateral (o Figma do desktop não tem um); barra lateral a partir de 1024 px, abaixo disso gaveta de filtros; ordenação sob as abas no mobile; filtros selecionados mostram um ícone, para não depender só de cor; preços com ponto decimal, como no restante do Figma; 9 itens por página.
@@ -159,4 +183,6 @@ O Figma define a identidade visual; o enunciado define o comportamento. Onde os 
 - O backend é simulado no navegador: dados e eventos são locais a cada navegador.
 - Os testes de regressão visual têm baselines só para macOS/Chromium; no CI (Linux) rodam só os testes funcionais.
 - Referências de transação e links do explorador são simulados e apontam para um domínio fictício.
-- _Lista final a ser revisada depois da integração das últimas fatias._
+- No mobile, Performance fica abaixo de 90 no Lighthouse (veja a seção 12).
+- As baselines visuais de página inteira no mobile mostram a barra de abas fixa no meio da captura: é como o Playwright costura elementos fixos, não um defeito de layout.
+- Login social, "esqueceu a senha" e as seções fora do escopo são apenas visuais (seção 13).
