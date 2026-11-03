@@ -1,6 +1,7 @@
 import type { Collector, LoginInput, Session } from '@/contracts/account'
+import type { RealtimeEvent } from '@/contracts/events'
 import type { AddCartLineInput, Cart, Quote, QuoteIssue, QuoteRequest } from '@/contracts/purchase'
-import { add, eth, sub, times } from '@/lib/money/eth'
+import { add, compare, eth, sub, times } from '@/lib/money/eth'
 import { evaluateCoupon } from './coupons'
 import type { WorldDeps } from './deps'
 import { seedState } from './fixtures'
@@ -55,14 +56,21 @@ export interface Control {
   /** Expires the Sessions of one Collector, or of everyone when omitted. */
   expireSession(collectorId?: string): void
   setAvailability(editionId: string, available: number): void
+  changePrice(nftId: string, price: string): void
 }
 export type OpName = keyof Ops
 
 export type ScenarioName = 'default'
 
+/** An event plus who may receive it: every connection, or only one Collector's. */
+export interface WorldMessage {
+  event: RealtimeEvent
+  audience: 'all' | string
+}
+
 export interface World {
   exec<K extends OpName>(op: K, input: Ops[K][0], ctx: Ctx): Promise<Result<Ops[K][1]>>
-  subscribe(listener: (message: unknown) => void): () => void
+  subscribe(listener: (message: WorldMessage) => void): () => void
   control: Control
 }
 
@@ -72,7 +80,33 @@ const toCollector = ({ passwordHash: _h, passwordSalt: _s, ...collector }: Colle
 export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'default'): Promise<World> {
   const { clock, ids } = deps
   const state: WorldState = await seedState()
-  const listeners = new Set<(message: unknown) => void>()
+  const listeners = new Set<(message: WorldMessage) => void>()
+
+  function emit(event: RealtimeEvent, audience: WorldMessage['audience']) {
+    for (const listener of listeners) listener({ event, audience })
+  }
+
+  /** Bumps an NFT's version and tells everyone its new Price and Availability. */
+  function publishNft(nft: NftRecord) {
+    nft.version++
+    emit(
+      {
+        type: 'nft.updated',
+        eventId: ids.next('evt'),
+        resourceId: nft.id,
+        version: nft.version,
+        occurredAt: new Date(clock.now()).toISOString(),
+        userId: null,
+        payload: {
+          price: nft.price,
+          previousPrice: nft.previousPrice,
+          editions: nft.editions.map((e) => ({ id: e.id, available: e.available })),
+          soldOut: nft.editions.every((e) => e.available === 0),
+        },
+      },
+      'all',
+    )
+  }
 
   function sessionFor(token: string, collectorId: string): Session {
     const record = state.sessions[token]
@@ -279,8 +313,30 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
       const resolved = resolveCart(ctx, { create: false })
       if (!resolved.ok) return resolved
       const record = resolved.value
-      const cart = serializeCart(record)
       const issues: QuoteIssue[] = []
+
+      // Bring the Cart in line with current Availability and Prices, recording what changed.
+      const before = record.version
+      record.lines = record.lines.flatMap((line) => {
+        const found = findEdition(line.nftId, line.editionId)
+        const cap = found ? maxQuantity(found.nft, found.edition.available) : 0
+        if (!found || cap === 0) {
+          issues.push({ kind: 'sold-out', lineId: line.id })
+          return []
+        }
+        if (line.quantity > cap) {
+          issues.push({ kind: 'quantity-reduced', lineId: line.id, from: line.quantity, to: cap })
+          line.quantity = cap
+        }
+        if (compare(found.nft.price, line.seenPrice) !== 0) {
+          issues.push({ kind: 'price-changed', lineId: line.id, from: line.seenPrice, to: found.nft.price })
+          line.seenPrice = found.nft.price
+        }
+        return [line]
+      })
+      if (issues.length > 0) record.version = before + 1
+
+      const cart = serializeCart(record)
       const subtotal = cart.lines.reduce((sum, l) => add(sum, l.lineTotal), eth('0'))
 
       let coupon: Quote['coupon'] = null
@@ -355,9 +411,19 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
         const edition = nft.editions.find((e) => e.id === editionId)
         if (edition) {
           edition.available = available
-          nft.version++
+          publishNft(nft)
         }
       }
+    },
+
+    changePrice(nftId, price) {
+      const nft = state.nfts[nftId]
+      if (!nft) return
+      const next = eth(price)
+      // A Previous Price is kept only while the new Price is lower (it's a price drop).
+      nft.previousPrice = compare(next, nft.price) < 0 ? nft.price : null
+      nft.price = next
+      publishNft(nft)
     },
   }
 

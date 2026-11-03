@@ -103,6 +103,62 @@ describe('Quote', () => {
   })
 })
 
+describe('Realtime events and changing Carts', () => {
+  it('announces a price drop to everyone and reports it once in the next Quote', async () => {
+    const { world, ana, events } = await loggedIn()
+    const cart = ok(await world.exec('cart.addLine', { ...EMERALD, quantity: 2 }, ana))
+    ok(await world.exec('quote.create', { paymentNetwork: 'ethereum' }, ana))
+
+    world.control.changePrice(EMERALD.nftId, '0.99')
+    expect(events.at(-1)).toMatchObject({
+      audience: 'all',
+      event: {
+        type: 'nft.updated',
+        resourceId: EMERALD.nftId,
+        version: 2,
+        userId: null,
+        payload: { price: '0.99', previousPrice: '1.19', soldOut: false },
+      },
+    })
+
+    const quote = ok(await world.exec('quote.create', { paymentNetwork: 'ethereum' }, ana))
+    expect(quote.subtotal).toBe('1.98')
+    expect(quote.issues).toEqual([
+      { kind: 'price-changed', lineId: cart.lines[0]?.id, from: '1.19', to: '0.99' },
+    ])
+    expect(ok(await world.exec('quote.create', { paymentNetwork: 'ethereum' }, ana)).issues).toEqual([])
+  })
+
+  it('clamps lines to a lower Availability and removes sold-out lines, saying so', async () => {
+    const { world, ana } = await loggedIn()
+    world.control.setAvailability(EMERALD.editionId, 5)
+    ok(await world.exec('cart.addLine', { ...EMERALD, quantity: 4 }, ana))
+    const cart = ok(await world.exec('cart.addLine', { ...GOLDEN, quantity: 1 }, ana))
+    const [emeraldLine, goldenLine] = cart.lines
+
+    world.control.setAvailability(EMERALD.editionId, 2)
+    world.control.setAvailability(GOLDEN.editionId, 0)
+
+    const quote = ok(await world.exec('quote.create', { paymentNetwork: 'ethereum' }, ana))
+    expect(quote.issues).toEqual([
+      { kind: 'quantity-reduced', lineId: emeraldLine?.id, from: 4, to: 2 },
+      { kind: 'sold-out', lineId: goldenLine?.id },
+    ])
+    expect(quote.subtotal).toBe('2.38')
+    expect(ok(await world.exec('cart.get', undefined, ana)).lines.map((l) => l.quantity)).toEqual([2])
+  })
+
+  it('gives every event a unique id and a per-resource version that only grows', async () => {
+    const { world, events } = await testWorld()
+    world.control.changePrice(EMERALD.nftId, '2.5')
+    world.control.setAvailability(EMERALD.editionId, 1)
+    const nftEvents = events.filter((e) => e.event.resourceId === EMERALD.nftId)
+    expect(nftEvents.map((e) => e.event.version)).toEqual([2, 3])
+    expect(new Set(nftEvents.map((e) => e.event.eventId)).size).toBe(2)
+    expect(nftEvents[0]?.event).toMatchObject({ payload: { price: '2.5', previousPrice: null } })
+  })
+})
+
 describe('Collector isolation', () => {
   it('keeps Favorites per Collector and refuses Guests', async () => {
     const { world, ana, bruno } = await loggedIn()
