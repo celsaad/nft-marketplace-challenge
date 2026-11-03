@@ -10,6 +10,9 @@ import { cn } from '@/ui/lib/utils'
 import { Label } from '@/ui/primitives/label'
 import { useApplyCoupon, useRemoveCoupon } from './mutations'
 
+/** The checkout's "Tem um código promocional?" link targets this field. */
+export const COUPON_INPUT_ID = 'cart-coupon-code'
+
 export function CouponForm({
   couponCode,
   say,

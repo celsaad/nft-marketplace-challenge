@@ -15,7 +15,7 @@ import {
   Skeleton,
 } from '@/ui/feedback'
 import { CartLineRow } from './cart-line'
-import { CouponForm } from './coupon-form'
+import { COUPON_INPUT_ID, CouponForm } from './coupon-form'
 import { useLineNames } from './line-names'
 import { useLiveRegion } from './live-region'
 import { useRemoveLine } from './mutations'
@@ -26,8 +26,6 @@ import { Recommendations } from './recommendations'
 
 /** The cart shows the Ethereum fee, as drawn; the Payment Network is chosen at checkout (ADR 0008). */
 const CART_NETWORK = 'ethereum'
-
-export const COUPON_INPUT_ID = 'cart-coupon-code'
 
 export function CartPage() {
   const t = useT()
@@ -64,11 +62,11 @@ export function CartPage() {
 
   return (
     <section className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 pt-6 pb-28 md:gap-4 md:px-6 md:pt-8 md:pb-16">
-      <div className="relative flex items-center justify-center md:hidden">
+      <div className="relative flex items-center justify-center md:sr-only">
         <Link
           to="/"
           aria-label={t('purchase.back')}
-          className="absolute left-0 grid size-12 place-items-center rounded-full bg-surface-raised text-primary"
+          className="absolute left-0 grid size-12 place-items-center rounded-full bg-surface-raised text-primary md:hidden"
         >
           <ChevronLeftIcon aria-hidden />
         </Link>
@@ -99,7 +97,6 @@ export function CartPage() {
         <ErrorState error={cart.error} onRetry={() => void cart.refetch()} />
       ) : !hasLines ? (
         <div className="flex flex-col gap-4">
-          <h1 className="sr-only md:not-sr-only md:text-xl md:font-bold">{t('purchase.cart.title')}</h1>
           <EmptyState title={t('purchase.cart.empty')}>
             <p className="text-sm text-muted-foreground">{t('purchase.cart.emptyBody')}</p>
             <Link to="/" hash="mercado" className="mt-2 font-bold text-primary hover:text-primary-hover">
@@ -111,7 +108,6 @@ export function CartPage() {
       ) : (
         <div className="grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-[minmax(0,1fr)_300px] md:gap-12 lg:grid-cols-[minmax(0,1fr)_332px] lg:gap-[86px]">
           <div className="flex min-w-0 flex-col gap-3">
-            <h1 className="sr-only">{t('purchase.cart.title')}</h1>
             <div
               aria-hidden
               className="hidden grid-cols-[70px_minmax(0,1fr)_138px_136px_128px_48px] border-b border-border pb-3 text-[15px] font-bold md:grid"
