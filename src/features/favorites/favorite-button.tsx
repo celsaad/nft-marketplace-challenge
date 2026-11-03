@@ -77,7 +77,17 @@ export function FavoriteSignInDialog() {
   const redirect = useRouterState({ select: (s) => s.location.href })
   return (
     <Dialog open={open} onOpenChange={(next) => useSignInPrompt.setState({ open: next })}>
-      <DialogContent className="sm:max-w-md" showCloseButton={false}>
+      <DialogContent
+        className="sm:max-w-md"
+        showCloseButton={false}
+        onCloseAutoFocus={(event) => {
+          const target = useSignInPrompt.getState().returnFocus
+          if (target?.isConnected) {
+            event.preventDefault()
+            target.focus()
+          }
+        }}
+      >
         <DialogHeader>
           <DialogTitle>{t('catalog.favorite.signInTitle')}</DialogTitle>
           <DialogDescription>{t('catalog.favorite.signInBody')}</DialogDescription>

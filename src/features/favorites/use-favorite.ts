@@ -21,8 +21,14 @@ export const favoritesQuery = (collectorId: string) =>
 /** Which NFTs have a Favorite request in flight (per Collector), for `pending`. */
 const usePending = create<{ pending: ReadonlySet<string> }>()(() => ({ pending: new Set() }))
 
-/** Opens the "sign in to favorite" dialog (rendered by <FavoriteSignInDialog>). */
-export const useSignInPrompt = create<{ open: boolean }>()(() => ({ open: false }))
+/**
+ * The "sign in to favorite" dialog (rendered by <FavoriteSignInDialog>). It remembers the heart
+ * that opened it, so closing it puts focus back there.
+ */
+export const useSignInPrompt = create<{ open: boolean; returnFocus: HTMLElement | null }>()(() => ({
+  open: false,
+  returnFocus: null,
+}))
 
 const pendingKey = (collectorId: string, nftId: string) => `${collectorId}:${nftId}`
 
@@ -85,7 +91,8 @@ export function useFavorite(nftId: string) {
 
   const toggle = () => {
     if (!collectorId) {
-      useSignInPrompt.setState({ open: true })
+      const active = document.activeElement
+      useSignInPrompt.setState({ open: true, returnFocus: active instanceof HTMLElement ? active : null })
       return
     }
     const next = !isFavorite
