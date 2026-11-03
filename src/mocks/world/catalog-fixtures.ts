@@ -6,7 +6,8 @@ import { eth } from '@/lib/money/eth'
 import type { NftRecord } from './state'
 
 const DAY = 86_400_000
-const EPOCH = Date.parse('2026-10-01T12:00:00Z')
+/** The newest fixture listing; older ones go back one day at a time. */
+const NEWEST_LISTING = Date.parse('2026-11-02T12:00:00Z')
 
 /** mulberry32: tiny seeded PRNG so fixtures are reproducible. */
 function prng(seed: number) {
@@ -245,7 +246,7 @@ export function seedCatalog(): Record<string, NftRecord> {
       collection: seed.collection,
       rare: seed.rare ?? false,
       // Figma cards are the newest listings, so they lead "Listados recentemente".
-      listedAt: new Date(EPOCH + (all.length - index) * DAY).toISOString(),
+      listedAt: new Date(NEWEST_LISTING - index * DAY).toISOString(),
       trending: Math.round(rand() * 1000),
       version: 1,
       description: `${seed.name} #${seed.tokenId} é uma obra digital finalizada à mão da coleção ${seed.collection.name}. Cada atributo fica armazenado nos metadados do token e é verificado na rede.`,

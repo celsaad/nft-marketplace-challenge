@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { eth } from '@/lib/money/eth'
 import { ANA, BRUNO, ok, testWorld } from './testing'
 
 async function loggedIn() {
@@ -326,6 +327,48 @@ describe('Orders', () => {
       status: 'confirmed',
       version: 2,
     })
+  })
+})
+
+describe('Catalog', () => {
+  const names = (page: { items: { name: string }[] }) => page.items.map((i) => i.name)
+
+  it('pages the default catalog newest first, nine per page', async () => {
+    const { world } = await testWorld()
+    const first = ok(await world.exec('catalog.list', {}, {}))
+    expect(first).toMatchObject({ page: 1, pageSize: 9, total: 48, totalPages: 6 })
+    expect(names(first).slice(0, 3)).toEqual(['Emerald Ape #042', 'Sage Nomad #009', 'Neon Vessel #552'])
+    expect(ok(await world.exec('catalog.list', { page: 6 }, {})).items).toHaveLength(3)
+  })
+
+  it('combines search, Category, Network and price range, and sorts', async () => {
+    const { world } = await testWorld()
+    const golden = ok(
+      await world.exec('catalog.list', { q: 'golden', category: ['music'], sort: 'price-asc' }, {}),
+    )
+    expect(names(golden)).toEqual(['Golden Signal #160', 'Golden Beat #207'])
+
+    const solanaOnly = ok(await world.exec('catalog.list', { q: 'golden', network: ['solana'] }, {}))
+    expect(names(solanaOnly)).toEqual(['Golden Signal #160'])
+    // A facet ignores its own filter, so the other Networks stay visible as options.
+    expect(solanaOnly.facets.networks).toEqual({ ethereum: 0, polygon: 1, solana: 1 })
+
+    const cheapNomads = ok(await world.exec('catalog.list', { q: 'NOMAD', maxPrice: eth('1.5') }, {}))
+    expect(names(cheapNomads)).toEqual(['Violet Nomad #314'])
+  })
+
+  it('answers an empty search with an empty page, and an unknown NFT with NOT_FOUND', async () => {
+    const { world } = await testWorld()
+    expect(ok(await world.exec('catalog.list', { q: 'zzz-nothing' }, {}))).toMatchObject({
+      items: [],
+      total: 0,
+      totalPages: 0,
+    })
+    expect(await world.exec('catalog.get', { id: 'nft_missing' }, {})).toMatchObject({
+      error: { code: 'NOT_FOUND', status: 404 },
+    })
+    const detail = ok(await world.exec('catalog.get', { id: 'nft_emerald-ape-042' }, {}))
+    expect(detail).toMatchObject({ price: '1.19', soldOut: false, collection: { name: 'Kurio Apes' } })
   })
 })
 

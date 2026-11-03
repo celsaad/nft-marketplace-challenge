@@ -7,6 +7,7 @@ import {
   type WalletInput,
   WalletInputSchema,
 } from '@/contracts/account'
+import type { CatalogPage, CatalogQuery, NftDetail, Review } from '@/contracts/catalog'
 import type { Network } from '@/contracts/common'
 import type { RealtimeEvent } from '@/contracts/events'
 import {
@@ -20,6 +21,7 @@ import {
   type QuoteRequest,
 } from '@/contracts/purchase'
 import { add, compare, eth, sub, times } from '@/lib/money/eth'
+import { queryCatalog, toDetail } from './catalog-query'
 import { evaluateCoupon } from './coupons'
 import type { WorldDeps } from './deps'
 import { seedState } from './fixtures'
@@ -50,6 +52,9 @@ export interface Ctx {
 
 /** Every operation the World exposes: [input, output]. */
 export interface Ops {
+  'catalog.list': [CatalogQuery, CatalogPage]
+  'catalog.get': [{ id: string }, NftDetail]
+  'catalog.reviews': [{ id: string }, Review[]]
   'auth.login': [LoginInput, Session]
   'auth.session': [undefined, Session]
   'auth.logout': [undefined, null]
@@ -620,6 +625,39 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
       if (!order) return fail('NOT_FOUND', 'Order not found')
       if (order.ownerId !== auth.value.id) return fail('FORBIDDEN', 'Not your order')
       return succeed(toOrder(order))
+    },
+
+    async 'catalog.list'(query) {
+      return succeed(queryCatalog(Object.values(state.nfts), query))
+    },
+
+    async 'catalog.get'({ id }) {
+      const nft = state.nfts[id]
+      return nft ? succeed(toDetail(nft)) : fail('NOT_FOUND', 'NFT not found')
+    },
+
+    async 'catalog.reviews'({ id }) {
+      const nft = state.nfts[id]
+      if (!nft) return fail('NOT_FOUND', 'NFT not found')
+      const authors = ['Marina C.', 'Diego R.', 'Lia M.', 'Tomás A.', 'Rafa P.', 'Júlia N.']
+      const texts = [
+        'Arte impecável e procedência clara. Recomendo.',
+        'Detalhes lindos em alta resolução; valeu cada ETH.',
+        'Entrega instantânea e edição bem documentada.',
+        'Coleção consistente, criador muito ativo na comunidade.',
+        'Gostei, mas esperava mais atributos raros.',
+        'Uma das peças favoritas da minha carteira.',
+      ]
+      const listed = Date.parse(nft.listedAt)
+      return succeed(
+        authors.slice(0, Math.min(authors.length, nft.rating.count)).map((author, i) => ({
+          id: `rev_${nft.id}_${i}`,
+          author,
+          rating: i === 4 ? 4 : 5,
+          text: texts[i] as string,
+          createdAt: new Date(listed + (i + 1) * 3_600_000).toISOString(),
+        })),
+      )
     },
 
     async 'wallets.list'(_input, ctx) {
