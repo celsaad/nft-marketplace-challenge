@@ -15,7 +15,12 @@ export default defineConfig({
   snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}-{projectName}-{platform}{ext}',
   expect: {
     timeout: 10_000,
-    toHaveScreenshot: { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.01 },
+    toHaveScreenshot: {
+      animations: 'disabled',
+      caret: 'hide',
+      maxDiffPixelRatio: 0.01,
+      stylePath: './e2e/visual.css',
+    },
   },
   use: {
     baseURL: `http://localhost:${PORT}`,

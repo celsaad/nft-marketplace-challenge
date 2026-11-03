@@ -1,0 +1,4 @@
+/* Applied only while taking visual baselines: the Mock Lab is a demo tool, not part of the design. */
+#mock-lab {
+  visibility: hidden !important;
+}
