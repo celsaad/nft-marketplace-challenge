@@ -2,7 +2,7 @@
 import { eth } from '@/lib/money/eth'
 import { seedCatalog } from './catalog-fixtures'
 import { hashPassword } from './password'
-import type { CollectorRecord, WorldState } from './state'
+import type { CollectorRecord, WalletRecord, WorldState } from './state'
 
 export const FIXTURE_PASSWORD = 'Password123!'
 
@@ -50,5 +50,59 @@ export async function seedState(): Promise<WorldState> {
       },
     },
     quotes: {},
+    wallets: Object.fromEntries(
+      [
+        wallet(
+          'w_ana_main',
+          ana.id,
+          'Principal',
+          `0x${'a11ce'.padEnd(40, '0')}`,
+          'ethereum',
+          'metamask',
+          true,
+        ),
+        wallet(
+          'w_ana_poly',
+          ana.id,
+          'Polygon',
+          `0x${'a11ce2'.padEnd(40, '0')}`,
+          'polygon',
+          'coinbase',
+          false,
+        ),
+        wallet(
+          'w_bruno_main',
+          bruno.id,
+          'Principal',
+          `0x${'b2a0'.padEnd(40, '0')}`,
+          'ethereum',
+          'coinbase',
+          true,
+        ),
+        wallet(
+          'w_bruno_sol',
+          bruno.id,
+          'Solana',
+          'BRuNo1111111111111111111111111111111111111',
+          'solana',
+          'walletconnect',
+          false,
+        ),
+      ].map((w) => [w.id, w]),
+    ),
+    walletConnections: {},
+    behavior: { walletResponse: 'approve' },
   }
+}
+
+function wallet(
+  id: string,
+  ownerId: string,
+  label: string,
+  address: string,
+  network: WalletRecord['network'],
+  provider: WalletRecord['provider'],
+  isPrimary: boolean,
+): WalletRecord {
+  return { id, ownerId, label, address, network, provider, isPrimary, createdAt: '2026-10-01T12:00:00.000Z' }
 }

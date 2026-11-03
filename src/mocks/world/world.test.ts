@@ -159,6 +159,59 @@ describe('Realtime events and changing Carts', () => {
   })
 })
 
+const NEW_WALLET = {
+  label: 'Carteira de testes',
+  address: '0x1111111111111111111111111111111111111111',
+  network: 'polygon' as const,
+  provider: 'walletconnect' as const,
+  isPrimary: false,
+}
+
+describe('Wallets', () => {
+  it('shows each Collector only their own Wallets and forbids editing someone else’s', async () => {
+    const { world, ana, bruno } = await loggedIn()
+    const anaWallets = ok(await world.exec('wallets.list', undefined, ana))
+    const brunoWallets = ok(await world.exec('wallets.list', undefined, bruno))
+    expect(anaWallets.length).toBeGreaterThan(0)
+    expect(anaWallets.some((w) => brunoWallets.some((b) => b.id === w.id))).toBe(false)
+
+    const target = brunoWallets[0]
+    expect(await world.exec('wallets.update', { id: target?.id ?? '', ...NEW_WALLET }, ana)).toMatchObject({
+      error: { code: 'FORBIDDEN', status: 403 },
+    })
+  })
+
+  it('validates addresses against the Network and keeps a single Primary Wallet', async () => {
+    const { world, ana } = await loggedIn()
+    expect(await world.exec('wallets.create', { ...NEW_WALLET, address: '0x123' }, ana)).toMatchObject({
+      error: { code: 'VALIDATION', fieldErrors: { address: 'validation.walletAddress' } },
+    })
+    expect(await world.exec('wallets.create', { ...NEW_WALLET, network: 'solana' }, ana)).toMatchObject({
+      error: { code: 'VALIDATION', fieldErrors: { address: 'validation.walletAddressNetwork' } },
+    })
+
+    const created = ok(await world.exec('wallets.create', { ...NEW_WALLET, isPrimary: true }, ana))
+    const wallets = ok(await world.exec('wallets.list', undefined, ana))
+    expect(wallets.filter((w) => w.isPrimary).map((w) => w.id)).toEqual([created.id])
+  })
+
+  it('approves or rejects a Wallet Connection as the mock world is told to', async () => {
+    const { world, ana } = await loggedIn()
+    const [wallet] = ok(await world.exec('wallets.list', undefined, ana))
+    expect(ok(await world.exec('wallets.connect', { id: wallet?.id ?? '' }, ana))).toEqual({
+      walletId: wallet?.id,
+      status: 'approved',
+    })
+    world.control.setWalletResponse('reject')
+    expect(await world.exec('wallets.connect', { id: wallet?.id ?? '' }, ana)).toMatchObject({
+      error: { code: 'WALLET_REJECTED' },
+    })
+    expect(ok(await world.exec('wallets.disconnect', { id: wallet?.id ?? '' }, ana)).status).toBe(
+      'disconnected',
+    )
+  })
+})
+
 describe('Collector isolation', () => {
   it('keeps Favorites per Collector and refuses Guests', async () => {
     const { world, ana, bruno } = await loggedIn()

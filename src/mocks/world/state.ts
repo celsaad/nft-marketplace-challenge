@@ -1,4 +1,4 @@
-import type { Collector } from '@/contracts/account'
+import type { Collector, Wallet } from '@/contracts/account'
 import type { NftDetail } from '@/contracts/catalog'
 import type { Eth } from '@/lib/money/eth'
 
@@ -28,6 +28,15 @@ export interface WorldState {
   carts: Record<string, CartRecord>
   coupons: Record<string, CouponRecord>
   quotes: Record<string, QuoteRecord>
+  wallets: Record<string, WalletRecord>
+  /** walletId → current simulated Wallet Connection. */
+  walletConnections: Record<string, 'approved' | 'disconnected'>
+  /** How simulated externals behave; set by Scenarios and Mock Control. */
+  behavior: { walletResponse: 'approve' | 'reject' }
+}
+
+export interface WalletRecord extends Wallet {
+  ownerId: string
 }
 
 export interface CouponRecord {

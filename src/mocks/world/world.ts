@@ -1,4 +1,12 @@
-import type { Collector, LoginInput, Session } from '@/contracts/account'
+import {
+  type Collector,
+  type LoginInput,
+  type Session,
+  type Wallet,
+  type WalletConnection,
+  type WalletInput,
+  WalletInputSchema,
+} from '@/contracts/account'
 import type { RealtimeEvent } from '@/contracts/events'
 import type { AddCartLineInput, Cart, Quote, QuoteIssue, QuoteRequest } from '@/contracts/purchase'
 import { add, compare, eth, sub, times } from '@/lib/money/eth'
@@ -14,8 +22,10 @@ import {
   type NftRecord,
   QUOTE_TTL_MS,
   SESSION_TTL_MS,
+  type WalletRecord,
   type WorldState,
 } from './state'
+import { validate } from './validate'
 
 /** Request-scoped facts the REST adapter extracts from headers. */
 export interface Ctx {
@@ -39,6 +49,11 @@ export interface Ops {
   'cart.applyCoupon': [{ code: string }, Cart]
   'cart.removeCoupon': [undefined, Cart]
   'quote.create': [QuoteRequest, Quote]
+  'wallets.list': [undefined, Wallet[]]
+  'wallets.create': [WalletInput, Wallet]
+  'wallets.update': [WalletInput & { id: string }, Wallet]
+  'wallets.connect': [{ id: string }, WalletConnection]
+  'wallets.disconnect': [{ id: string }, WalletConnection]
 }
 
 /** FNV-1a: a short, stable fingerprint; not cryptographic, only needs to change when content does. */
@@ -57,6 +72,8 @@ export interface Control {
   expireSession(collectorId?: string): void
   setAvailability(editionId: string, available: number): void
   changePrice(nftId: string, price: string): void
+  /** How the simulated Wallet answers the next connection requests. */
+  setWalletResponse(response: 'approve' | 'reject'): void
 }
 export type OpName = keyof Ops
 
@@ -121,6 +138,25 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
     if (!record || !collector) return fail('UNAUTHENTICATED', 'Authentication required')
     if (record.expiresAt <= clock.now()) return fail('SESSION_EXPIRED', 'Session expired')
     return succeed(collector)
+  }
+
+  const toWallet = ({ ownerId: _o, ...wallet }: WalletRecord): Wallet => wallet
+  const walletsOf = (ownerId: string) => Object.values(state.wallets).filter((w) => w.ownerId === ownerId)
+
+  function makePrimary(walletId: string) {
+    const target = state.wallets[walletId]
+    if (!target) return
+    for (const w of walletsOf(target.ownerId)) w.isPrimary = w.id === walletId
+  }
+
+  /** A Wallet the caller owns; someone else's is FORBIDDEN, a missing one NOT_FOUND. */
+  function ownedWallet(id: string, ctx: Ctx): Result<WalletRecord> {
+    const auth = authenticate(ctx)
+    if (!auth.ok) return auth
+    const record = state.wallets[id]
+    if (!record) return fail('NOT_FOUND', 'Wallet not found')
+    if (record.ownerId !== auth.value.id) return fail('FORBIDDEN', 'Not your wallet')
+    return succeed(record)
   }
 
   function findEdition(nftId: string, editionId: string) {
@@ -390,6 +426,58 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
       })
     },
 
+    async 'wallets.list'(_input, ctx) {
+      const auth = authenticate(ctx)
+      if (!auth.ok) return auth
+      return succeed(walletsOf(auth.value.id).map(toWallet))
+    },
+
+    async 'wallets.create'(input, ctx) {
+      const auth = authenticate(ctx)
+      if (!auth.ok) return auth
+      const valid = validate(WalletInputSchema, input)
+      if (!valid.ok) return valid
+      const record = {
+        ...valid.value,
+        id: ids.next('w'),
+        ownerId: auth.value.id,
+        createdAt: new Date(clock.now()).toISOString(),
+      }
+      state.wallets[record.id] = record
+      if (record.isPrimary || walletsOf(auth.value.id).length === 1) makePrimary(record.id)
+      return succeed(toWallet(state.wallets[record.id] as WalletRecord))
+    },
+
+    async 'wallets.update'({ id, ...input }, ctx) {
+      const owned = ownedWallet(id, ctx)
+      if (!owned.ok) return owned
+      const valid = validate(WalletInputSchema, input)
+      if (!valid.ok) return valid
+      Object.assign(owned.value, valid.value)
+      if (valid.value.isPrimary) makePrimary(id)
+      // A Collector always keeps one Primary Wallet.
+      if (!walletsOf(owned.value.ownerId).some((w) => w.isPrimary)) owned.value.isPrimary = true
+      return succeed(toWallet(owned.value))
+    },
+
+    async 'wallets.connect'({ id }, ctx) {
+      const owned = ownedWallet(id, ctx)
+      if (!owned.ok) return owned
+      if (state.behavior.walletResponse === 'reject') {
+        state.walletConnections[id] = 'disconnected'
+        return fail('WALLET_REJECTED', 'The wallet rejected the connection')
+      }
+      state.walletConnections[id] = 'approved'
+      return succeed({ walletId: id, status: 'approved' })
+    },
+
+    async 'wallets.disconnect'({ id }, ctx) {
+      const owned = ownedWallet(id, ctx)
+      if (!owned.ok) return owned
+      state.walletConnections[id] = 'disconnected'
+      return succeed({ walletId: id, status: 'disconnected' })
+    },
+
     async 'cart.removeLine'({ lineId }, ctx) {
       const resolved = resolveCart(ctx, { create: false })
       if (!resolved.ok) return resolved
@@ -414,6 +502,10 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
           publishNft(nft)
         }
       }
+    },
+
+    setWalletResponse(response) {
+      state.behavior.walletResponse = response
     },
 
     changePrice(nftId, price) {
