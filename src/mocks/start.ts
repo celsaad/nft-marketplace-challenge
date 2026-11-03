@@ -23,10 +23,20 @@ function readStoredScenario(): string | null {
   }
 }
 
+/** A Scenario named in the URL sticks, so in-app navigation and a refresh stay in it. */
+function storeScenario(name: string) {
+  try {
+    localStorage.setItem(SCENARIO_STORAGE_KEY, name)
+  } catch {
+    // Storage unavailable: the Scenario lasts for this load only.
+  }
+}
+
 export async function startMocks(config: { apiBase: string; realtimeUrl: string }): Promise<MockApi> {
   const url = new URL(location.href)
   const requested = url.searchParams.get('scenario') ?? readStoredScenario()
   const scenario = isScenarioName(requested) ? requested : 'default'
+  if (url.searchParams.has('scenario')) storeScenario(scenario)
   const reset = url.searchParams.has('reset')
   if (reset) {
     // Reset once; a later refresh must keep the state the user has built since.

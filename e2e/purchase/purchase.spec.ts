@@ -1,11 +1,39 @@
-// Scenario 6: a full purchase, from the Cart to the confirmed Receipt.
-// The NFT detail page belongs to another slice, so the Cart is filled through the REST API it uses.
+// Scenario 6: a full purchase, from the catalog to the confirmed Receipt.
+
+import { logoutVia } from '../account/helpers'
+import { card } from '../catalog/helpers'
 import { BRUNO, expect, open, test } from '../fixtures'
 import { anaWithCart, connectInReview, NFT, openReview, orderCount, reload, signIn } from './helpers'
 
 test('buys the Cart and shows the Receipt only once the payment is confirmed', async ({ page, mock }) => {
   await open(page, '/')
-  await anaWithCart(page, '/carrinho')
+  await signIn(page)
+  // Two of one NFT and one of another, each from its detail page.
+  for (const [nft, edition, quantity] of [
+    [NFT.emerald, '1/50', 2],
+    [NFT.sage, '1/10', 1],
+  ] as const) {
+    // Sequential: one detail page after the other.
+    // oxlint-disable-next-line no-await-in-loop
+    await page.goto('/')
+    // oxlint-disable-next-line no-await-in-loop
+    await card(page, nft.name).getByRole('link').click()
+    // oxlint-disable-next-line no-await-in-loop
+    await page.getByRole('radio', { name: edition }).click()
+    for (let i = 1; i < quantity; i++) {
+      // oxlint-disable-next-line no-await-in-loop
+      await page.getByRole('button', { name: 'Aumentar quantidade' }).click()
+    }
+    // oxlint-disable-next-line no-await-in-loop
+    await page
+      .getByRole('button', { name: /^Comprar/ })
+      .filter({ visible: true })
+      .click()
+    // oxlint-disable-next-line no-await-in-loop
+    await expect(page.getByText(`${quantity}× ${nft.name} (${edition}) no carrinho.`)).toBeVisible()
+  }
+  await page.getByRole('button', { name: 'Ver carrinho' }).click()
+  await expect(page).toHaveURL(/\/carrinho$/)
   await expect(page.getByTestId('quote-total')).toHaveText('4.086 ETH')
   await page.getByRole('link', { name: 'Conectar e finalizar' }).click()
 
@@ -62,8 +90,7 @@ test('shows another Collector’s Order as forbidden', async ({ page }) => {
   await expect(page).toHaveURL(/\/pedidos\/ord_/)
   const orderPath = new URL(page.url()).pathname
 
-  await page.evaluate(() => localStorage.removeItem('kurio.session'))
-  await page.goto('/')
+  await logoutVia(page, 'Ana Souza')
   await signIn(page, BRUNO)
   await page.goto(orderPath)
   await expect(page.getByText('Este pedido pertence a outro colecionador.')).toBeVisible()

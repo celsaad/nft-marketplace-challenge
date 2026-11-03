@@ -1,9 +1,10 @@
-// Helpers for the purchase specs. The login screen belongs to another slice, so a Collector signs
-// in through the REST API from inside the page and the persisted Session is seeded exactly as the
-// app writes it (zustand persist, version 1). Cart Lines are added through the same REST API the
-// NFT detail page uses; every assertion still observes the UI.
+// Helpers for the purchase specs. Collectors sign in through the login form (fixtures.signIn).
+// Cart Lines are added through the same REST API the NFT detail page uses, as setup; every
+// assertion still observes the UI.
 import type { Page } from '@playwright/test'
-import { ANA } from '../fixtures'
+import { signIn } from '../fixtures'
+
+export { signIn }
 
 export const SESSION_KEY = 'kurio.session'
 
@@ -29,55 +30,10 @@ export const NFT = {
   },
 } as const
 
-type Credentials = { email: string; password: string }
-
 /** Reloads and waits for the mock backend (the URL no longer carries `reset`, so state survives). */
 export async function reload(page: Page) {
   await page.reload()
   await page.waitForFunction(() => Boolean(window.__mock))
-}
-
-/** Signs in as a fixture Collector (merging the Guest Cart, like the login screen does) and reloads. */
-export async function signIn(page: Page, who: Credentials = ANA) {
-  // Keep the Scenario chosen by open() for later navigations, the way the Mock Lab's
-  // selectScenario does (the mock's own setting, not app state).
-  await page.evaluate(() => {
-    if (window.__mock) localStorage.setItem('kurio.mock.scenario', window.__mock.scenario)
-  })
-  // Let the app finish its first write (the Guest Cart id) so it can't overwrite the seeded Session.
-  await page.waitForFunction((key) => {
-    const state = JSON.parse(localStorage.getItem(key) ?? '{}').state ?? {}
-    return Boolean(state.guestCartId || state.token || state.lastCollectorId)
-  }, SESSION_KEY)
-  await page.evaluate(
-    async ({ creds, key }) => {
-      const stored = JSON.parse(localStorage.getItem(key) ?? '{}')
-      const guestCartId: string | null = stored.state?.guestCartId ?? null
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(guestCartId ? { 'X-Cart-Id': guestCartId } : {}) },
-        body: JSON.stringify(creds),
-      })
-      if (!response.ok) throw new Error(`login failed: ${response.status}`)
-      const session = await response.json()
-      localStorage.setItem(
-        key,
-        JSON.stringify({
-          state: {
-            status: 'authenticated',
-            token: session.token,
-            expiresAt: session.expiresAt,
-            collectorId: session.collector.id,
-            lastCollectorId: session.collector.id,
-            guestCartId: null,
-          },
-          version: 1,
-        }),
-      )
-    },
-    { creds: who, key: SESSION_KEY },
-  )
-  await reload(page)
 }
 
 /** Adds a Cart Line as the current visitor (Collector or Guest) through the REST API. */

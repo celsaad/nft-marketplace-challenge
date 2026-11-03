@@ -39,6 +39,28 @@ export async function open(page: Page, path = '/', scenario: ScenarioName = 'def
   await page.waitForFunction(() => Boolean(window.__mock))
 }
 
+type Credentials = { email: string; password: string }
+
+export async function fillLogin(page: Page, credentials: Credentials) {
+  await page.getByRole('textbox', { name: 'E-mail', exact: true }).fill(credentials.email)
+  await page.getByLabel('Senha', { exact: true }).fill(credentials.password)
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click()
+}
+
+/**
+ * Signs in through the login form and returns to the page the test was on (`redirect`), the way
+ * a Collector does: the Guest Cart merge and draft restore run through the real app.
+ */
+export async function signIn(page: Page, credentials: Credentials = ANA) {
+  const here = new URL(page.url())
+  if (here.pathname !== '/entrar') {
+    await page.goto(`/entrar?redirect=${encodeURIComponent(here.pathname + here.search)}`)
+  }
+  await fillLogin(page, credentials)
+  await expect(page).not.toHaveURL(/\/entrar/)
+  await expect(page.getByRole('link', { name: 'Entrar' })).toHaveCount(0)
+}
+
 export const test = base.extend<{ mock: MockCall }>({
   mock: async ({ page }, use) => {
     await use(mockOf(page))

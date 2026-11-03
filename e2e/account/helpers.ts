@@ -1,12 +1,9 @@
 // Account flows through the UI only, as a Collector would do them.
 import { crc32, deflateSync } from 'node:zlib'
-import { expect, type Page } from '@playwright/test'
+import type { Page } from '@playwright/test'
+import { expect, fillLogin } from '../fixtures'
 
-export async function fillLogin(page: Page, credentials: { email: string; password: string }) {
-  await page.getByRole('textbox', { name: 'E-mail', exact: true }).fill(credentials.email)
-  await page.getByLabel('Senha', { exact: true }).fill(credentials.password)
-  await page.getByRole('button', { name: 'Entrar', exact: true }).click()
-}
+export { fillLogin }
 
 /** Logs in from /entrar and waits until the header shows the Collector. */
 export async function loginAs(page: Page, credentials: { email: string; password: string }, name: string) {

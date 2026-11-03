@@ -1,7 +1,7 @@
 // Scenario 4: Favorites persist for the signed-in Collector; the toggle is optimistic and rolls
 // back (with an accessible message) when the server fails.
-import { ANA, expect, open, test } from '../fixtures'
-import { card, signIn } from './helpers'
+import { ANA, expect, open, signIn, test } from '../fixtures'
+import { card } from './helpers'
 
 const heart = (page: import('@playwright/test').Page, name: string) =>
   card(page, name).getByRole('button', { name: `Favoritar ${name}` })

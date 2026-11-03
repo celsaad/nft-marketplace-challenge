@@ -59,43 +59,6 @@ export async function expectChosen(page: Page, info: TestInfo, option: string) {
   }
 }
 
-/**
- * Signs a Collector in through the REST API and reloads, so the app boots with that Session.
- * The Session is written by an init script (before the app runs, once per tab): writing it into
- * the live page would race the running Guest app persisting its own state over it.
- * The login screen belongs to another slice; once it lands this can drive the form instead.
- */
-export async function signIn(page: Page, credentials: { email: string; password: string }) {
-  const session = await page.evaluate(async (creds) => {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(creds),
-    })
-    if (!response.ok) throw new Error(`login failed: ${response.status}`)
-    return response.json()
-  }, credentials)
-  const persisted = JSON.stringify({
-    state: {
-      status: 'authenticated',
-      token: session.token,
-      expiresAt: session.expiresAt,
-      collectorId: session.collector.id,
-      lastCollectorId: session.collector.id,
-      guestCartId: null,
-    },
-    version: 1,
-  })
-  await page.addInitScript((value) => {
-    if (sessionStorage.getItem('e2e.signedIn')) return
-    localStorage.setItem('kurio.session', value)
-    sessionStorage.setItem('e2e.signedIn', '1')
-  }, persisted)
-  await page.reload()
-  await page.waitForFunction(() => Boolean(window.__mock))
-  await expect(page.getByRole('link', { name: 'Entrar' })).toHaveCount(0)
-}
-
 /** Scrolls through the page so lazy images load, then waits until every image has decoded. */
 export async function settleImages(page: Page) {
   await page.evaluate(async () => {

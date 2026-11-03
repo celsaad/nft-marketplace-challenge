@@ -51,13 +51,15 @@ test('operates the Wallet forms from the keyboard: Figma field order, Enter subm
     ).toBeFocused()
   }
 
-  // Enter in a field submits; an emptied required field is announced with its error.
+  // Enter in any field submits; an emptied required field is announced with its error.
   const label = primary.getByRole('textbox', { name: 'Apelido da carteira' })
   await label.fill('')
-  await label.press('Enter')
+  await primary.getByRole('textbox', { name: 'Nome do perfil' }).press('Enter')
   await expect(label).toHaveAccessibleDescription('Campo obrigatório.')
   // The form moves focus to the first invalid field (just after rendering the error).
   await expect(label).toBeFocused()
+  // react-hook-form focuses it again from a setTimeout; let that run before moving focus on.
+  await page.evaluate(() => new Promise((resolve) => setTimeout(resolve)))
 
   // A secondary Wallet's Editar is a disclosure: it reports its state and keeps focus.
   const edit = page.getByRole('button', { name: 'Editar Polygon', exact: true })
