@@ -42,6 +42,10 @@ export function compare(a: Eth, b: Eth): -1 | 0 | 1 {
   return diff === 0n ? 0 : diff < 0n ? -1 : 1
 }
 
+export function isZero(amount: Eth): boolean {
+  return toWei(amount) === 0n
+}
+
 /** A share of `amount` in basis points (1000 = 10%), rounded down so a discount never over-grants. */
 export function percentOf(amount: Eth, basisPoints: number): Eth {
   return fromWei((toWei(amount) * BigInt(basisPoints)) / 10_000n)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { add, compare, eth, formatEth, percentOf, sub, times } from './eth'
+import { add, compare, eth, formatEth, isZero, percentOf, sub, times } from './eth'
 
 describe('ETH amounts', () => {
   it('adds without floating-point error', () => {
@@ -24,6 +24,11 @@ describe('ETH amounts', () => {
     expect(percentOf(eth('26.83'), 1000)).toBe('2.683')
     expect(percentOf(eth('0.000000000000000001'), 3333)).toBe('0')
     expect(percentOf(eth('0.000000000000000003'), 5000)).toBe('0.000000000000000001')
+  })
+
+  it('recognizes zero however it is spelled', () => {
+    expect(isZero(eth('0.000'))).toBe(true)
+    expect(isZero(eth('0.000000000000000001'))).toBe(false)
   })
 
   it('subtracts and compares', () => {

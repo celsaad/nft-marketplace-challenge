@@ -1,6 +1,7 @@
 import type { Collector, LoginInput, Session } from '@/contracts/account'
-import type { AddCartLineInput, Cart } from '@/contracts/purchase'
-import { times } from '@/lib/money/eth'
+import type { AddCartLineInput, Cart, Quote, QuoteIssue, QuoteRequest } from '@/contracts/purchase'
+import { add, eth, sub, times } from '@/lib/money/eth'
+import { evaluateCoupon } from './coupons'
 import type { WorldDeps } from './deps'
 import { seedState } from './fixtures'
 import { verifyPassword } from './password'
@@ -8,7 +9,9 @@ import { type DomainError, fail, type Result, succeed } from './result'
 import {
   type CartRecord,
   type CollectorRecord,
+  NETWORK_FEES,
   type NftRecord,
+  QUOTE_TTL_MS,
   SESSION_TTL_MS,
   type WorldState,
 } from './state'
@@ -32,6 +35,19 @@ export interface Ops {
   'cart.addLine': [AddCartLineInput, Cart]
   'cart.setQuantity': [{ lineId: string; quantity: number }, Cart]
   'cart.removeLine': [{ lineId: string }, Cart]
+  'cart.applyCoupon': [{ code: string }, Cart]
+  'cart.removeCoupon': [undefined, Cart]
+  'quote.create': [QuoteRequest, Quote]
+}
+
+/** FNV-1a: a short, stable fingerprint; not cryptographic, only needs to change when content does. */
+function fingerprint(value: unknown): string {
+  let hash = 0x811c9dc5
+  for (const char of JSON.stringify(value)) {
+    hash ^= char.charCodeAt(0)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return (hash >>> 0).toString(16).padStart(8, '0')
 }
 
 /** Mock Control: how people (Mock Lab) and Playwright change the world. Never touches app state. */
@@ -230,6 +246,92 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
       line.quantity = quantity
       resolved.value.version++
       return succeed(serializeCart(resolved.value))
+    },
+
+    async 'cart.applyCoupon'({ code }, ctx) {
+      const resolved = resolveCart(ctx, { create: false })
+      if (!resolved.ok) return resolved
+      const cart = serializeCart(resolved.value)
+      const subtotal = cart.lines.reduce((sum, l) => add(sum, l.lineTotal), eth('0'))
+      const normalized = code.trim().toUpperCase()
+      const result = evaluateCoupon(state.coupons[normalized], subtotal, clock.now())
+      if (result.status === 'invalid')
+        return fail('COUPON_INVALID', 'Unknown coupon', { code: 'coupon.invalid' })
+      if (result.status === 'expired')
+        return fail('COUPON_EXPIRED', 'Coupon expired', { code: 'coupon.expired' })
+      if (result.status === 'minimum-not-met') {
+        return fail('COUPON_INVALID', 'Minimum not met', { code: 'coupon.minimum' })
+      }
+      resolved.value.couponCode = normalized
+      resolved.value.version++
+      return succeed(serializeCart(resolved.value))
+    },
+
+    async 'cart.removeCoupon'(_input, ctx) {
+      const resolved = resolveCart(ctx, { create: false })
+      if (!resolved.ok) return resolved
+      resolved.value.couponCode = null
+      resolved.value.version++
+      return succeed(serializeCart(resolved.value))
+    },
+
+    async 'quote.create'({ paymentNetwork }, ctx) {
+      const resolved = resolveCart(ctx, { create: false })
+      if (!resolved.ok) return resolved
+      const record = resolved.value
+      const cart = serializeCart(record)
+      const issues: QuoteIssue[] = []
+      const subtotal = cart.lines.reduce((sum, l) => add(sum, l.lineTotal), eth('0'))
+
+      let coupon: Quote['coupon'] = null
+      let discount = eth('0')
+      if (record.couponCode) {
+        const result = evaluateCoupon(state.coupons[record.couponCode], subtotal, clock.now())
+        if (result.status === 'applied') {
+          discount = result.discount
+          coupon = {
+            code: result.coupon.code,
+            status: 'applied',
+            kind: result.coupon.kind,
+            value: result.coupon.value,
+          }
+        } else {
+          issues.push({ kind: 'coupon-dropped', code: record.couponCode, reason: result.status })
+          record.couponCode = null
+          record.version++
+        }
+      }
+
+      const networkFee = eth(NETWORK_FEES[paymentNetwork])
+      const total = add(sub(subtotal, discount), networkFee)
+      const lines = cart.lines.map((l) => ({
+        lineId: l.id,
+        unitPrice: l.unitPrice,
+        quantity: l.quantity,
+        lineTotal: l.lineTotal,
+      }))
+      const hash = fingerprint([
+        lines.map((l) => [l.lineId, l.unitPrice, l.quantity]),
+        coupon?.code,
+        paymentNetwork,
+        total,
+      ])
+      const id = ids.next('quote')
+      const expiresAt = clock.now() + QUOTE_TTL_MS
+      state.quotes[id] = { id, cartId: record.id, hash, expiresAt }
+      return succeed({
+        id,
+        hash,
+        lines,
+        subtotal,
+        coupon,
+        discount,
+        paymentNetwork,
+        networkFee,
+        total,
+        issues,
+        expiresAt: new Date(expiresAt).toISOString(),
+      })
     },
 
     async 'cart.removeLine'({ lineId }, ctx) {

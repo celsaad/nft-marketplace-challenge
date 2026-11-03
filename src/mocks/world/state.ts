@@ -26,7 +26,30 @@ export interface WorldState {
   /** collectorId → NFT ids, most recent first. */
   favorites: Record<string, string[]>
   carts: Record<string, CartRecord>
+  coupons: Record<string, CouponRecord>
+  quotes: Record<string, QuoteRecord>
 }
+
+export interface CouponRecord {
+  code: string
+  kind: 'percent' | 'fixed'
+  /** Basis points for percent Coupons (1000 = 10%); ETH for fixed ones. */
+  value: string
+  minSubtotal: Eth | null
+  expiresAt: number | null
+}
+
+export interface QuoteRecord {
+  id: string
+  cartId: string
+  hash: string
+  expiresAt: number
+}
+
+export const QUOTE_TTL_MS = 10 * 60 * 1000
+
+/** Network Fee per Payment Network (ADR 0008); Ethereum matches the Figma's 0.016 ETH. */
+export const NETWORK_FEES = { ethereum: '0.016', polygon: '0.002', solana: '0.001' } as const
 
 export interface CartLineRecord {
   id: string

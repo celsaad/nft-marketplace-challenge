@@ -49,6 +49,60 @@ describe('Cart', () => {
   })
 })
 
+describe('Quote', () => {
+  async function anaWithCart() {
+    const t = await loggedIn()
+    ok(await t.world.exec('cart.addLine', { ...EMERALD, quantity: 2 }, t.ana))
+    const cart = ok(await t.world.exec('cart.addLine', { ...GOLDEN, quantity: 1 }, t.ana))
+    return { ...t, cart }
+  }
+
+  it('totals subtotal, percentage Coupon and the Payment Network’s fee', async () => {
+    const { world, ana } = await anaWithCart()
+    ok(await world.exec('cart.applyCoupon', { code: 'KURIO10' }, ana))
+
+    const onEthereum = ok(await world.exec('quote.create', { paymentNetwork: 'ethereum' }, ana))
+    expect(onEthereum).toMatchObject({
+      subtotal: '3.37',
+      discount: '0.337',
+      networkFee: '0.016',
+      total: '3.049',
+      coupon: { code: 'KURIO10', status: 'applied' },
+      issues: [],
+    })
+    const onPolygon = ok(await world.exec('quote.create', { paymentNetwork: 'polygon' }, ana))
+    expect(onPolygon.total).toBe('3.035')
+    expect(onPolygon.hash).not.toBe(onEthereum.hash)
+  })
+
+  it('refuses unknown and expired Coupons', async () => {
+    const { world, ana } = await anaWithCart()
+    expect(await world.exec('cart.applyCoupon', { code: 'NOPE' }, ana)).toMatchObject({
+      error: { code: 'COUPON_INVALID' },
+    })
+    expect(await world.exec('cart.applyCoupon', { code: 'EXPIRED20' }, ana)).toMatchObject({
+      error: { code: 'COUPON_EXPIRED' },
+    })
+  })
+
+  it('drops a Coupon whose minimum is no longer met, and says why', async () => {
+    const { world, ana, cart } = await anaWithCart()
+    ok(await world.exec('cart.applyCoupon', { code: 'LAUNCH05' }, ana))
+    const emeraldLine = cart.lines.find((l) => l.editionId === EMERALD.editionId)
+    ok(await world.exec('cart.removeLine', { lineId: emeraldLine?.id ?? '' }, ana))
+
+    const quote = ok(await world.exec('quote.create', { paymentNetwork: 'ethereum' }, ana))
+    expect(quote).toMatchObject({
+      subtotal: '0.99',
+      discount: '0',
+      total: '1.006',
+      coupon: null,
+      issues: [{ kind: 'coupon-dropped', code: 'LAUNCH05', reason: 'minimum-not-met' }],
+    })
+    expect(ok(await world.exec('cart.get', undefined, ana)).couponCode).toBeNull()
+  })
+})
+
 describe('Collector isolation', () => {
   it('keeps Favorites per Collector and refuses Guests', async () => {
     const { world, ana, bruno } = await loggedIn()
