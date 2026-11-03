@@ -11,7 +11,7 @@ const CATEGORIES = ['performance', 'accessibility', 'best-practices', 'seo']
 const TARGETS = { performance: 90, accessibility: 95, 'best-practices': 95, seo: 90 }
 
 const median = (values) => {
-  const sorted = [...values].sort((a, b) => a - b)
+  const sorted = values.toSorted((a, b) => a - b)
   const mid = Math.floor(sorted.length / 2)
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
 }
