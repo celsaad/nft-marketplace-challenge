@@ -2,7 +2,7 @@
 import { eth } from '@/lib/money/eth'
 import { seedCatalog } from './catalog-fixtures'
 import { hashPassword } from './password'
-import type { CollectorRecord, WalletRecord, WorldState } from './state'
+import { type CollectorRecord, SESSION_TTL_MS, type WalletRecord, type WorldState } from './state'
 
 export const FIXTURE_PASSWORD = 'Password123!'
 
@@ -93,7 +93,7 @@ export async function seedState(): Promise<WorldState> {
     walletConnections: {},
     orders: {},
     idempotency: {},
-    behavior: { walletResponse: 'approve', paymentOutcome: 'confirm' },
+    behavior: { walletResponse: 'approve', paymentOutcome: 'confirm', sessionTtlMs: SESSION_TTL_MS },
   }
 }
 

@@ -35,6 +35,7 @@ import type { WorldDeps } from './deps'
 import { seedState } from './fixtures'
 import { hashPassword, verifyPassword } from './password'
 import { type DomainError, fail, type Result, succeed } from './result'
+import { SCENARIOS, type ScenarioDefinition, type ScenarioName } from './scenarios'
 import {
   type CartRecord,
   type CollectorRecord,
@@ -43,11 +44,12 @@ import {
   type OrderRecord,
   PAYMENT_DELAY_MS,
   QUOTE_TTL_MS,
-  SESSION_TTL_MS,
   type WalletRecord,
   type WorldState,
 } from './state'
 import { validate } from './validate'
+
+export type { ScenarioName }
 
 /** Request-scoped facts the REST adapter extracts from headers. */
 export interface Ctx {
@@ -111,10 +113,18 @@ export interface Control {
   /** How simulated payments of new Orders end; 'manual' waits for resolveOrder. */
   setPaymentOutcome(outcome: 'confirm' | 'reject' | 'manual'): void
   resolveOrder(orderId: string, status: 'confirmed' | 'rejected'): void
+  /** Restores the Scenario's known state (and saves it). */
+  reset(): void
 }
 export type OpName = keyof Ops
 
-export type ScenarioName = 'default'
+export interface WorldOptions {
+  scenario?: ScenarioName
+  /** Ignore saved state and start the Scenario from scratch. */
+  reset?: boolean
+}
+
+export const STORAGE_PREFIX = 'kurio.mock.v1.'
 
 /** An event plus who may receive it: every connection, or only one Collector's. */
 export interface WorldMessage {
@@ -126,15 +136,30 @@ export interface World {
   exec<K extends OpName>(op: K, input: Ops[K][0], ctx: Ctx): Promise<Result<Ops[K][1]>>
   subscribe(listener: (message: WorldMessage) => void): () => void
   control: Control
+  scenario: ScenarioDefinition & { name: ScenarioName }
 }
 
 const toCollector = ({ passwordHash: _h, passwordSalt: _s, ...collector }: CollectorRecord): Collector =>
   collector
 
-export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'default'): Promise<World> {
-  const { clock, ids } = deps
-  const state: WorldState = await seedState()
+export async function createWorld(deps: WorldDeps, options: WorldOptions = {}): Promise<World> {
+  const { clock, ids, storage } = deps
+  const scenarioName = options.scenario ?? 'default'
+  const scenario = SCENARIOS[scenarioName] as ScenarioDefinition
+  const storageKey = `${STORAGE_PREFIX}${scenarioName}`
+
+  // The Scenario's known state, kept as JSON so reset() can restore it synchronously.
+  const seed = await seedState()
+  scenario.prepare?.(seed)
+  const seedJson = JSON.stringify(seed)
+
+  const saved = options.reset ? null : storage.get(storageKey)
+  let state: WorldState = JSON.parse(saved ?? seedJson)
+  const save = () => storage.set(storageKey, JSON.stringify(state))
+  save()
+
   const listeners = new Set<(message: WorldMessage) => void>()
+  const timers = new Set<number>()
 
   function emit(event: RealtimeEvent, audience: WorldMessage['audience']) {
     for (const listener of listeners) listener({ event, audience })
@@ -247,13 +272,24 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
 
   const toOrder = ({ ownerId: _o, ...order }: OrderRecord): Order => order
 
-  function schedulePayment(orderId: string) {
+  function schedulePayment(orderId: string, delay = PAYMENT_DELAY_MS) {
     const outcome = state.behavior.paymentOutcome
     if (outcome === 'manual') return
-    clock.setTimeout(
-      () => resolveOrder(orderId, outcome === 'reject' ? 'rejected' : 'confirmed'),
-      PAYMENT_DELAY_MS,
-    )
+    const timer = clock.setTimeout(() => {
+      timers.delete(timer)
+      resolveOrder(orderId, outcome === 'reject' ? 'rejected' : 'confirmed')
+      save()
+    }, delay)
+    timers.add(timer)
+  }
+
+  /** After a reload, pending payments continue where they left off (never re-created). */
+  function resumePendingPayments() {
+    for (const order of Object.values(state.orders)) {
+      if (order.status !== 'pending') continue
+      const remaining = Date.parse(order.createdAt) + PAYMENT_DELAY_MS - clock.now()
+      schedulePayment(order.id, Math.max(0, remaining))
+    }
   }
 
   /** Moves a pending Order to its terminal state; terminal Orders never change again. */
@@ -411,7 +447,10 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
         return fail('INVALID_CREDENTIALS', 'Invalid email or password')
       }
       const token = ids.next('tok')
-      state.sessions[token] = { collectorId: collector.id, expiresAt: clock.now() + SESSION_TTL_MS }
+      state.sessions[token] = {
+        collectorId: collector.id,
+        expiresAt: clock.now() + state.behavior.sessionTtlMs,
+      }
       mergeGuestCart(ctx.cartId, collector.id)
       return succeed(sessionFor(token, collector.id))
     },
@@ -441,7 +480,7 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
         passwordHash: await hashPassword(password, passwordSalt),
       }
       const token = ids.next('tok')
-      state.sessions[token] = { collectorId: id, expiresAt: clock.now() + SESSION_TTL_MS }
+      state.sessions[token] = { collectorId: id, expiresAt: clock.now() + state.behavior.sessionTtlMs }
       mergeGuestCart(ctx.cartId, id)
       return succeed(sessionFor(token, id))
     },
@@ -852,15 +891,39 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
       nft.price = next
       publishNft(nft)
     },
+
+    reset() {
+      for (const timer of timers) clock.clearTimeout(timer)
+      timers.clear()
+      state = JSON.parse(seedJson)
+    },
   }
 
+  // Every change is saved right away, so a reload always finds the latest state.
+  const savingControl = Object.fromEntries(
+    Object.entries(control).map(([name, fn]) => [
+      name,
+      (...args: unknown[]) => {
+        ;(fn as (...a: unknown[]) => void)(...args)
+        save()
+      },
+    ]),
+  ) as unknown as Control
+
+  resumePendingPayments()
+
   return {
-    exec: (op, input, ctx) => handlers[op](input, ctx),
+    async exec(op, input, ctx) {
+      const result = await handlers[op](input, ctx)
+      save()
+      return result
+    },
     subscribe(listener) {
       listeners.add(listener)
       return () => listeners.delete(listener)
     },
-    control,
+    control: savingControl,
+    scenario: { ...scenario, name: scenarioName },
   }
 }
 

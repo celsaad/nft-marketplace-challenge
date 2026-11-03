@@ -36,7 +36,11 @@ export interface WorldState {
   /** `${collectorId}:${Idempotency-Key}` → the Checkout Attempt it identifies. */
   idempotency: Record<string, { fingerprint: string; orderId: string }>
   /** How simulated externals behave; set by Scenarios and Mock Control. */
-  behavior: { walletResponse: 'approve' | 'reject'; paymentOutcome: 'confirm' | 'reject' | 'manual' }
+  behavior: {
+    walletResponse: 'approve' | 'reject'
+    paymentOutcome: 'confirm' | 'reject' | 'manual'
+    sessionTtlMs: number
+  }
 }
 
 export interface OrderRecord extends Order {

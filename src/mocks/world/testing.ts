@@ -40,10 +40,10 @@ export function sequentialIds(): IdSource {
   return { next: (prefix) => `${prefix}_${++n}` }
 }
 
-export async function testWorld(scenario?: Parameters<typeof createWorld>[1]) {
+export async function testWorld(options?: Parameters<typeof createWorld>[1]) {
   const clock = fakeClock()
   const storage = memoryStore()
-  const world = await createWorld({ storage, clock, ids: sequentialIds() }, scenario)
+  const world = await createWorld({ storage, clock, ids: sequentialIds() }, options)
   const events: Parameters<Parameters<typeof world.subscribe>[0]>[0][] = []
   world.subscribe((e) => events.push(e))
   return { world, clock, storage, events }
