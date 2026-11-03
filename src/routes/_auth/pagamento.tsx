@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { PagePlaceholder } from '@/ui/page-placeholder'
+import { CheckoutPage } from '@/features/checkout/checkout-page'
 
 export const Route = createFileRoute('/_auth/pagamento')({
-  component: () => <PagePlaceholder title="Pagamento" />,
+  component: CheckoutPage,
 })
