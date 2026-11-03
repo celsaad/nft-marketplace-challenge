@@ -194,6 +194,7 @@ export const catalog = {
   'catalog.nft.reviewsError': 'Não foi possível carregar as avaliações',
   'catalog.nft.reviewBy': 'por {author}',
   'catalog.nft.more': 'Mais desta coleção',
+  'catalog.nft.moreGoTo': 'Ir para o grupo {n} da coleção',
   'catalog.nft.moreEmpty': 'Nenhum outro NFT desta coleção no momento.',
   'catalog.nft.notFoundTitle': 'NFT não encontrado',
   'catalog.nft.notFoundBody': 'Este NFT não existe ou foi removido do mercado.',

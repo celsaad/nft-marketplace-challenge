@@ -195,6 +195,7 @@ export const catalog: Record<keyof typeof source, string> = {
   'catalog.nft.reviewsError': 'Could not load the reviews',
   'catalog.nft.reviewBy': 'by {author}',
   'catalog.nft.more': 'More from this collection',
+  'catalog.nft.moreGoTo': 'Go to collection group {n}',
   'catalog.nft.moreEmpty': 'No other NFT from this collection right now.',
   'catalog.nft.notFoundTitle': 'NFT not found',
   'catalog.nft.notFoundBody': 'This NFT does not exist or was removed from the market.',
