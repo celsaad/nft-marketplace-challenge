@@ -39,6 +39,11 @@ export async function reload(page: Page) {
 
 /** Signs in as a fixture Collector (merging the Guest Cart, like the login screen does) and reloads. */
 export async function signIn(page: Page, who: Credentials = ANA) {
+  // Keep the Scenario chosen by open() for later navigations, the way the Mock Lab's
+  // selectScenario does (the mock's own setting, not app state).
+  await page.evaluate(() => {
+    if (window.__mock) localStorage.setItem('kurio.mock.scenario', window.__mock.scenario)
+  })
   // Let the app finish its first write (the Guest Cart id) so it can't overwrite the seeded Session.
   await page.waitForFunction((key) => {
     const state = JSON.parse(localStorage.getItem(key) ?? '{}').state ?? {}
@@ -119,8 +124,9 @@ export async function openReview(page: Page) {
 /** In the review dialog: approve the simulated Wallet Connection. */
 export async function connectInReview(page: Page) {
   const dialog = page.getByRole('dialog')
-  await dialog.getByRole('button', { name: 'Conectar carteira' }).click()
-  await dialog.getByRole('button', { name: 'Confirmar e pagar' }).waitFor()
+  const connect = dialog.getByRole('button', { name: 'Conectar carteira' })
+  // The connection survives in the checkout draft, so a second attempt may already be connected.
+  if (await connect.isVisible()) await connect.click()
   await page.waitForFunction(() => {
     const button = [...document.querySelectorAll('[role=dialog] button')].find((b) =>
       b.textContent?.includes('Confirmar e pagar'),
@@ -129,15 +135,13 @@ export async function connectInReview(page: Page) {
   })
 }
 
-/** How many Orders the mock backend holds (read from the persisted World, never from app state). */
-export async function orderCount(page: Page): Promise<number> {
+/** The statuses of the Orders the mock backend holds (read from the persisted World, never from app state). */
+export async function orderStatuses(page: Page): Promise<string[]> {
   return page.evaluate(() => {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i) ?? ''
-      if (!key.startsWith('kurio.mock.v1.')) continue
-      const world = JSON.parse(localStorage.getItem(key) ?? '{}')
-      if (world.orders) return Object.keys(world.orders).length
-    }
-    return -1
+    const scenario = localStorage.getItem('kurio.mock.scenario') ?? window.__mock?.scenario ?? 'default'
+    const world = JSON.parse(localStorage.getItem(`kurio.mock.v1.${scenario}`) ?? '{}')
+    return Object.values<{ status: string }>(world.orders ?? {}).map((o) => o.status)
   })
 }
+
+export const orderCount = async (page: Page) => (await orderStatuses(page)).length

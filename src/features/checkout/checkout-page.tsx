@@ -38,11 +38,14 @@ export function CheckoutPage() {
 /** An attempt whose Order is still pending is recovered on its Order page, never re-submitted. */
 function CheckoutGate({ collectorId }: { collectorId: string }) {
   const t = useT()
-  const [savedOrderId] = useState(() => readAttempt(collectorId)?.orderId ?? null)
+  const [savedAttempt] = useState(() => readAttempt(collectorId))
+  const savedOrderId = savedAttempt?.orderId ?? null
   const saved = useQuery({ ...orderQuery(collectorId, savedOrderId ?? ''), enabled: Boolean(savedOrderId) })
   const cart = useCart()
   const me = useQuery(meQuery(collectorId))
   const wallets = useWallets(collectorId)
+  // A request whose outcome is unknown is resumed even if its Order has since emptied the Cart.
+  const [started, setStarted] = useState(() => Boolean(savedAttempt?.input && !savedAttempt.orderId))
 
   if (savedOrderId && saved.isPending) {
     return (
@@ -73,7 +76,10 @@ function CheckoutGate({ collectorId }: { collectorId: string }) {
       </Shell>
     )
   }
-  if (cart.data.lines.length === 0) {
+  // Once checkout has started, the form stays: an Order created by a request whose answer was
+  // lost may already have emptied the Cart, and the attempt still has to be recovered here.
+  if (cart.data.lines.length > 0 && !started) setStarted(true)
+  if (cart.data.lines.length === 0 && !started) {
     return (
       <Shell>
         <EmptyState title={t('purchase.checkout.emptyCart')}>
