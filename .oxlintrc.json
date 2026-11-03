@@ -1,0 +1,64 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "jsx-a11y", "import", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "env": {
+    "browser": true,
+    "es2024": true
+  },
+  "ignorePatterns": [
+    "src/routeTree.gen.ts",
+    "public/mockServiceWorker.js",
+    "dist",
+    "design",
+    "docs/lighthouse"
+  ],
+  "rules": {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "react/react-in-jsx-scope": "off",
+    "no-console": [
+      "warn",
+      {
+        "allow": ["error", "warn"]
+      }
+    ],
+    "typescript/no-explicit-any": "warn",
+    "import/no-cycle": "error",
+    "import/no-unassigned-import": [
+      "warn",
+      {
+        "allow": ["**/*.css"]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/app/**",
+        "src/features/**",
+        "src/routes/**",
+        "src/ui/**",
+        "src/lib/**",
+        "src/contracts/**"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/mocks", "@/mocks/*", "**/mocks", "**/mocks/*"],
+                "message": "App code must never import the mock backend. Only src/main.tsx may load it (ADR 0001, module-design \u00a7Layout)."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

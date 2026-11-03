@@ -14,7 +14,8 @@ Every decision made while planning, in compact form. Read this before you start 
 
 ## Stack and tooling
 
-- Vite single-page app. TanStack Router with file-based, code-split routes. pnpm through Corepack. Biome for lint and format. Vitest for pure logic.
+- Vite single-page app. TanStack Router with file-based, code-split routes. pnpm through Corepack. Vitest for pure logic.
+- Linting is done by **oxlint** (plugins: react, react-hooks, jsx-a11y, typescript, import, unicorn). It also enforces the rule that app code never imports `src/mocks`. **Biome** only formats and organizes imports; its linter is off so the two tools never report the same problem twice.
 - Vercel hosting with a rewrite to the single-page app. Deploys from `main`.
 - GitHub Actions runs typecheck, lint, Vitest and the functional Playwright tests (visual tests skipped on Linux).
 - Fonts: Roboto Mono (400/500/700) bundled with the app through `@fontsource`.
