@@ -10,6 +10,8 @@
 //   under CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/), as stated by Nouns DAO.
 //   Fetched as SVG from https://noun.pics/<id>.svg, which renders each Noun's on-chain artwork.
 //   noun-NN is Noun #NN; the catalog shows it under a fictional name.
+// A one-off build script: sequential downloads/encodes keep memory flat and logs readable.
+/* oxlint-disable no-await-in-loop, no-console */
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
