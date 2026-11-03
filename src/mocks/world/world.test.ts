@@ -372,6 +372,79 @@ describe('Catalog', () => {
   })
 })
 
+describe('Sign-up and profile', () => {
+  const NEWCOMER = {
+    displayName: 'Carla Dias',
+    username: 'carla_dias',
+    email: 'carla@jungle.test',
+    password: 'Senha1234',
+  }
+
+  it('signs a newcomer up with a Session and keeps the Guest Cart they built', async () => {
+    const { world } = await testWorld()
+    const guest = ok(await world.exec('cart.addLine', { ...GOLDEN, quantity: 2 }, {}))
+    const session = ok(await world.exec('auth.signup', NEWCOMER, { cartId: guest.id }))
+    expect(session.collector).toMatchObject({ username: 'carla_dias', email: 'carla@jungle.test' })
+    const cart = ok(await world.exec('cart.get', undefined, { token: session.token }))
+    expect(cart.lines.map((l) => l.quantity)).toEqual([2])
+  })
+
+  it('reports taken emails and usernames, and weak passwords, on the right field', async () => {
+    const { world } = await testWorld()
+    expect(await world.exec('auth.signup', { ...NEWCOMER, email: 'ANA@jungle.test' }, {})).toMatchObject({
+      error: { code: 'EMAIL_TAKEN', status: 409, fieldErrors: { email: 'validation.emailTaken' } },
+    })
+    expect(await world.exec('auth.signup', { ...NEWCOMER, username: 'bruno_lima' }, {})).toMatchObject({
+      error: { code: 'USERNAME_TAKEN', fieldErrors: { username: 'validation.usernameTaken' } },
+    })
+    expect(await world.exec('auth.signup', { ...NEWCOMER, password: 'short' }, {})).toMatchObject({
+      error: { code: 'VALIDATION', fieldErrors: { password: 'validation.passwordLength' } },
+    })
+  })
+
+  it('persists profile edits, refusing another Collector’s username', async () => {
+    const { world, ana, bruno } = await loggedIn()
+    const current = ok(await world.exec('profile.get', undefined, ana))
+    const edit = { ...current, displayName: 'Ana S.', bio: 'Nova bio' }
+    ok(await world.exec('profile.update', edit, ana))
+    expect(ok(await world.exec('profile.get', undefined, ana))).toMatchObject({
+      displayName: 'Ana S.',
+      bio: 'Nova bio',
+    })
+    expect(ok(await world.exec('profile.get', undefined, bruno)).displayName).toBe('Bruno Lima')
+
+    expect(await world.exec('profile.update', { ...edit, username: 'bruno_lima' }, ana)).toMatchObject({
+      error: { code: 'USERNAME_TAKEN' },
+    })
+    expect(await world.exec('profile.avatar', { dataUrl: 'data:text/plain;base64,AAAA' }, ana)).toMatchObject(
+      {
+        error: { code: 'VALIDATION', fieldErrors: { dataUrl: 'validation.avatarType' } },
+      },
+    )
+    const avatar = 'data:image/png;base64,iVBORw0KGgo='
+    expect(ok(await world.exec('profile.avatar', { dataUrl: avatar }, ana)).avatarUrl).toBe(avatar)
+  })
+
+  it('changes the password only with the current one, after which only the new one works', async () => {
+    const { world, ana } = await loggedIn()
+    expect(
+      await world.exec('profile.password', { currentPassword: 'wrong', newPassword: 'NovaSenha99' }, ana),
+    ).toMatchObject({
+      error: { code: 'VALIDATION', fieldErrors: { currentPassword: 'validation.currentPassword' } },
+    })
+
+    ok(
+      await world.exec(
+        'profile.password',
+        { currentPassword: ANA.password, newPassword: 'NovaSenha99' },
+        ana,
+      ),
+    )
+    expect((await world.exec('auth.login', ANA, {})).ok).toBe(false)
+    expect((await world.exec('auth.login', { ...ANA, password: 'NovaSenha99' }, {})).ok).toBe(true)
+  })
+})
+
 describe('Collector isolation', () => {
   it('keeps Favorites per Collector and refuses Guests', async () => {
     const { world, ana, bruno } = await loggedIn()

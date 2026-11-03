@@ -1,7 +1,15 @@
 import {
+  type ChangePasswordInput,
+  ChangePasswordInputSchema,
   type Collector,
   type LoginInput,
   type Session,
+  type SignupInput,
+  SignupInputSchema,
+  type UpdateAvatarInput,
+  UpdateAvatarInputSchema,
+  type UpdateProfileInput,
+  UpdateProfileInputSchema,
   type Wallet,
   type WalletConnection,
   type WalletInput,
@@ -25,7 +33,7 @@ import { queryCatalog, toDetail } from './catalog-query'
 import { evaluateCoupon } from './coupons'
 import type { WorldDeps } from './deps'
 import { seedState } from './fixtures'
-import { verifyPassword } from './password'
+import { hashPassword, verifyPassword } from './password'
 import { type DomainError, fail, type Result, succeed } from './result'
 import {
   type CartRecord,
@@ -58,6 +66,11 @@ export interface Ops {
   'auth.login': [LoginInput, Session]
   'auth.session': [undefined, Session]
   'auth.logout': [undefined, null]
+  'auth.signup': [SignupInput, Session]
+  'profile.get': [undefined, Collector]
+  'profile.update': [UpdateProfileInput, Collector]
+  'profile.avatar': [UpdateAvatarInput, Collector]
+  'profile.password': [ChangePasswordInput, null]
   'favorites.list': [undefined, string[]]
   'favorites.add': [{ nftId: string }, string[]]
   'favorites.remove': [{ nftId: string }, string[]]
@@ -154,6 +167,21 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
     const collector = state.collectors[collectorId]
     if (!record || !collector) throw new Error('session invariant broken')
     return { token, expiresAt: new Date(record.expiresAt).toISOString(), collector: toCollector(collector) }
+  }
+
+  /** The conflict error when another Collector already uses this email or username. */
+  function identityTaken(
+    { email, username }: { email: string; username: string },
+    exceptId?: string,
+  ): Result<never> | null {
+    const others = Object.values(state.collectors).filter((c) => c.id !== exceptId)
+    if (others.some((c) => c.email === email.toLowerCase())) {
+      return fail('EMAIL_TAKEN', 'Email already registered', { email: 'validation.emailTaken' })
+    }
+    if (others.some((c) => c.username === username)) {
+      return fail('USERNAME_TAKEN', 'Username already taken', { username: 'validation.usernameTaken' })
+    }
+    return null
   }
 
   function authenticate(ctx: Ctx): Result<CollectorRecord> {
@@ -392,6 +420,73 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
       const auth = authenticate(ctx)
       if (!auth.ok) return auth
       return succeed(sessionFor(ctx.token as string, auth.value.id))
+    },
+
+    async 'auth.signup'(input, ctx) {
+      const valid = validate(SignupInputSchema, input)
+      if (!valid.ok) return valid
+      const { password, ...fields } = valid.value
+      const taken = identityTaken({ email: fields.email, username: fields.username })
+      if (taken) return taken
+      const id = ids.next('col')
+      const passwordSalt = ids.next('salt')
+      state.collectors[id] = {
+        ...fields,
+        id,
+        email: fields.email.toLowerCase(),
+        avatarUrl: null,
+        ensName: null,
+        bio: '',
+        passwordSalt,
+        passwordHash: await hashPassword(password, passwordSalt),
+      }
+      const token = ids.next('tok')
+      state.sessions[token] = { collectorId: id, expiresAt: clock.now() + SESSION_TTL_MS }
+      mergeGuestCart(ctx.cartId, id)
+      return succeed(sessionFor(token, id))
+    },
+
+    async 'profile.get'(_input, ctx) {
+      const auth = authenticate(ctx)
+      return auth.ok ? succeed(toCollector(auth.value)) : auth
+    },
+
+    async 'profile.update'(input, ctx) {
+      const auth = authenticate(ctx)
+      if (!auth.ok) return auth
+      const valid = validate(UpdateProfileInputSchema, input)
+      if (!valid.ok) return valid
+      const taken = identityTaken(valid.value, auth.value.id)
+      if (taken) return taken
+      Object.assign(auth.value, valid.value, { email: valid.value.email.toLowerCase() })
+      return succeed(toCollector(auth.value))
+    },
+
+    async 'profile.avatar'(input, ctx) {
+      const auth = authenticate(ctx)
+      if (!auth.ok) return auth
+      const valid = validate(UpdateAvatarInputSchema, input)
+      if (!valid.ok) return valid
+      auth.value.avatarUrl = valid.value.dataUrl
+      return succeed(toCollector(auth.value))
+    },
+
+    async 'profile.password'(input, ctx) {
+      const auth = authenticate(ctx)
+      if (!auth.ok) return auth
+      const valid = validate(ChangePasswordInputSchema, input)
+      if (!valid.ok) return valid
+      const collector = auth.value
+      if (
+        !(await verifyPassword(valid.value.currentPassword, collector.passwordSalt, collector.passwordHash))
+      ) {
+        return fail('VALIDATION', 'Current password is wrong', {
+          currentPassword: 'validation.currentPassword',
+        })
+      }
+      collector.passwordSalt = ids.next('salt')
+      collector.passwordHash = await hashPassword(valid.value.newPassword, collector.passwordSalt)
+      return succeed(null)
     },
 
     async 'auth.logout'(_input, ctx) {
