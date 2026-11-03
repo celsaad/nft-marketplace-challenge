@@ -106,5 +106,41 @@ function wallet(
   provider: WalletRecord['provider'],
   isPrimary: boolean,
 ): WalletRecord {
-  return { id, ownerId, label, address, network, provider, isPrimary, createdAt: '2026-10-01T12:00:00.000Z' }
+  return {
+    id,
+    ownerId,
+    label,
+    address,
+    network,
+    provider,
+    isPrimary,
+    ...BUYERS[ownerId],
+    createdAt: '2026-10-01T12:00:00.000Z',
+  } as WalletRecord
+}
+
+/** Buyer Details every fixture Wallet carries (checkout prefills from them). */
+const BUYERS: Record<
+  string,
+  Omit<
+    WalletRecord,
+    'id' | 'ownerId' | 'label' | 'address' | 'network' | 'provider' | 'isPrimary' | 'createdAt'
+  >
+> = {
+  col_ana: {
+    displayName: 'Ana Souza',
+    profileName: 'Ana Coleções',
+    email: 'ana@jungle.test',
+    referralCode: 'KURIO-ANA',
+    ensName: 'anasouza.eth',
+    secondaryAddress: null,
+  },
+  col_bruno: {
+    displayName: 'Bruno Lima',
+    profileName: 'Bruno Sons',
+    email: 'bruno@jungle.test',
+    referralCode: 'KURIO-BRUNO',
+    ensName: 'brunolima.eth',
+    secondaryAddress: null,
+  },
 }

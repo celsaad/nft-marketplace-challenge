@@ -169,9 +169,43 @@ const NEW_WALLET = {
   network: 'polygon' as const,
   provider: 'walletconnect' as const,
   isPrimary: false,
+  displayName: 'Ana Souza',
+  profileName: 'Ana Coleções',
+  email: 'ana@jungle.test',
+  referralCode: 'KURIO-ANA',
+  ensName: 'anasouza.eth',
+  secondaryAddress: null,
 }
 
 describe('Wallets', () => {
+  it('keeps the Buyer Details a Wallet carries, for checkout to prefill from', async () => {
+    const { world, ana } = await loggedIn()
+    const created = ok(await world.exec('wallets.create', NEW_WALLET, ana))
+    const listed = ok(await world.exec('wallets.list', undefined, ana)).find((w) => w.id === created.id)
+    expect(listed).toMatchObject({
+      displayName: 'Ana Souza',
+      profileName: 'Ana Coleções',
+      email: 'ana@jungle.test',
+      referralCode: 'KURIO-ANA',
+      ensName: 'anasouza.eth',
+      secondaryAddress: null,
+    })
+    expect(await world.exec('wallets.create', { ...NEW_WALLET, referralCode: 'x' }, ana)).toMatchObject({
+      error: { code: 'VALIDATION', fieldErrors: { referralCode: 'validation.referralCode' } },
+    })
+  })
+
+  it('gives every fixture Wallet complete Buyer Details', async () => {
+    const { world, ana, bruno } = await loggedIn()
+    for (const who of [ana, bruno]) {
+      for (const wallet of ok(await world.exec('wallets.list', undefined, who))) {
+        expect(
+          wallet.displayName && wallet.profileName && wallet.email && wallet.referralCode && wallet.ensName,
+        ).toBeTruthy()
+      }
+    }
+  })
+
   it('shows each Collector only their own Wallets and forbids editing someone else’s', async () => {
     const { world, ana, bruno } = await loggedIn()
     const anaWallets = ok(await world.exec('wallets.list', undefined, ana))

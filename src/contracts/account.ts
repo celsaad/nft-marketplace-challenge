@@ -84,27 +84,41 @@ export const WalletAddressSchema = z
   .string()
   .regex(/^(0x[0-9a-fA-F]{40}|[1-9A-HJ-NP-Za-km-z]{32,44})$/, 'validation.walletAddress')
 
-export const WalletInputSchema = z
-  .object({
-    label: z.string().trim().min(1, 'validation.required').max(40),
-    address: WalletAddressSchema,
-    network: NetworkSchema,
-    provider: WalletProviderSchema,
-    isPrimary: z.boolean(),
-  })
-  .refine((w) => (w.network === 'solana') === !w.address.startsWith('0x'), {
-    path: ['address'],
-    message: 'validation.walletAddressNetwork',
-  })
-export type WalletInput = z.infer<typeof WalletInputSchema>
+// Field validators shared by Wallets and checkout, so a Wallet never holds details checkout rejects.
+export const EnsNameSchema = z
+  .string()
+  .trim()
+  .regex(/^[a-z0-9-]+\.eth$/, 'validation.ens')
+export const ReferralCodeSchema = z
+  .string()
+  .trim()
+  .regex(/^[A-Za-z0-9-]{3,20}$/, 'validation.referralCode')
+export const ProfileNameSchema = z.string().trim().min(1, 'validation.required').max(60, 'validation.tooLong')
+export const SecondaryAddressSchema = z.string().trim().max(64, 'validation.tooLong')
 
-export const WalletSchema = z.object({
-  id: IdSchema,
-  label: z.string(),
-  address: z.string(),
+const WalletFieldsSchema = z.object({
+  label: z.string().trim().min(1, 'validation.required').max(40),
+  address: WalletAddressSchema,
   network: NetworkSchema,
   provider: WalletProviderSchema,
   isPrimary: z.boolean(),
+  // Buyer Details carried by the Wallet (Figma "Carteiras"); checkout prefills from the chosen one.
+  displayName: DisplayNameSchema,
+  profileName: ProfileNameSchema,
+  email: EmailSchema,
+  referralCode: ReferralCodeSchema,
+  ensName: EnsNameSchema,
+  secondaryAddress: SecondaryAddressSchema.nullable(),
+})
+
+export const WalletInputSchema = WalletFieldsSchema.refine(
+  (w) => (w.network === 'solana') === !w.address.startsWith('0x'),
+  { path: ['address'], message: 'validation.walletAddressNetwork' },
+)
+export type WalletInput = z.infer<typeof WalletInputSchema>
+
+export const WalletSchema = WalletFieldsSchema.extend({
+  id: IdSchema,
   createdAt: IsoDateSchema,
 })
 export type Wallet = z.infer<typeof WalletSchema>

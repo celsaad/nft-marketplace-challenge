@@ -51,6 +51,7 @@ Every decision made while planning, in compact form. Read this before you start 
 - A Previous Price is shown struck through only while the current Price is lower.
 - A Cart has at most one Coupon: a percentage or fixed discount on the subtotal, never on the Network Fee. If it becomes invalid, the next Quote drops it and the UI announces why.
 - Favorites point at NFTs, not Editions.
+- A Wallet carries **Buyer Details** (display name, profile name, email, referral code, ENS name, optional secondary address), matching the Figma "Carteiras" form field for field. Checkout prefills from the chosen Wallet. The secondary Wallet can copy the primary's Buyer Details ("Igual à carteira principal"). Both schemas share the same field validators, so a Wallet can never hold details that checkout would reject.
 - A rejected Order is terminal. Buying again starts a new Checkout Attempt with a new key. Cart Lines are kept on failure. On confirmation, only the purchased quantities are removed.
 
 ## Integrity

@@ -1,5 +1,12 @@
 import { z } from 'zod'
-import { EmailSchema, WalletAddressSchema } from './account'
+import {
+  EmailSchema,
+  EnsNameSchema,
+  ProfileNameSchema,
+  ReferralCodeSchema,
+  SecondaryAddressSchema,
+  WalletAddressSchema,
+} from './account'
 import { EthSchema, IdSchema, IsoDateSchema, NetworkSchema } from './common'
 
 export const CartLineSchema = z.object({
@@ -79,15 +86,12 @@ export type Quote = z.infer<typeof QuoteSchema>
 export const BuyerDetailsSchema = z.object({
   displayName: z.string().trim().min(1, 'validation.required'),
   username: z.string().trim().min(1, 'validation.required'),
-  profileName: z.string().trim().min(1, 'validation.required'),
+  profileName: ProfileNameSchema,
   email: EmailSchema,
   walletAddress: WalletAddressSchema,
-  secondaryWallet: z.string().trim().max(64).optional(),
-  referralCode: z
-    .string()
-    .trim()
-    .regex(/^[A-Za-z0-9-]{3,20}$/, 'validation.referralCode'),
-  ensName: z.string().regex(/^[a-z0-9-]+\.eth$/, 'validation.ens'),
+  secondaryWallet: SecondaryAddressSchema.optional(),
+  referralCode: ReferralCodeSchema,
+  ensName: EnsNameSchema,
   note: z.string().max(500, 'validation.tooLong').optional(),
 })
 export type BuyerDetails = z.infer<typeof BuyerDetailsSchema>

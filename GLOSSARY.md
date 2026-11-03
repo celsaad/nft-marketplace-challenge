@@ -67,7 +67,7 @@ _Avoid_: like, wishlist, bookmark
 ## Wallets
 
 **Wallet**:
-A Collector's registered address on one Network, held through one Wallet Provider. UI: _Carteira_.
+A Collector's registered address on one Network, held through one Wallet Provider, together with the Buyer Details used when paying from it. UI: _Carteira_.
 _Avoid_: account, address
 
 **Primary Wallet**:
@@ -77,6 +77,10 @@ _Avoid_: default wallet, main account
 **Wallet Provider**:
 The app that holds a Wallet: MetaMask, WalletConnect or Coinbase Wallet. UI: _Tipo de carteira_.
 _Avoid_: wallet type, wallet app
+
+**Buyer Details**:
+The identity and contact details a Wallet carries (display name, profile name, email, referral code, ENS name, optional secondary address), used to prefill checkout when that Wallet is chosen. UI: the fields of _Carteira principal_ and _Pagamento_.
+_Avoid_: billing info, payer data, wallet profile
 
 **Wallet Connection**:
 The simulated approval a Wallet gives at checkout, which ends approved, rejected or disconnected.
