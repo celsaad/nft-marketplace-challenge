@@ -1,5 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { z } from 'zod'
+import { CatalogQuerySchema } from '@/contracts/catalog'
+import { PagePlaceholder } from '@/ui/page-placeholder'
+
+/** Catalog state lives in the URL (spec §Catálogo); invalid values are dropped, never crash. */
+export const HomeSearchSchema = CatalogQuerySchema.extend({
+  favorites: z.boolean().optional().catch(undefined),
+})
 
 export const Route = createFileRoute('/')({
-  component: () => <h1 className="p-8 text-2xl font-bold">Kurio</h1>,
+  validateSearch: HomeSearchSchema,
+  component: () => <PagePlaceholder title="Início" />,
 })

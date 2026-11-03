@@ -79,3 +79,38 @@
     @apply outline-2 outline-offset-2 outline-ring;
   }
 }
+
+/* Skeleton shimmer for data-dependent content (catalog, detail, cart summary).
+   Static under prefers-reduced-motion. */
+@layer components {
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--surface-raised);
+  }
+  .skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--foreground) 8%, transparent),
+      transparent
+    );
+    animation: kurio-shimmer 1.4s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-shimmer::after {
+      animation: none;
+      display: none;
+    }
+  }
+}
+
+@keyframes kurio-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
