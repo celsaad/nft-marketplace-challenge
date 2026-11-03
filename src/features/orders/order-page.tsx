@@ -205,7 +205,7 @@ function Fact({
   return (
     <div className={cn('flex min-w-0 flex-col px-3 md:border-r md:border-primary', last && 'md:border-r-0')}>
       <dt className={cn('text-muted-foreground', strong && 'font-bold')}>{label}</dt>
-      <dd className="truncate text-muted-foreground tabular-nums">{value}</dd>
+      <dd className="break-words text-muted-foreground tabular-nums">{value}</dd>
     </div>
   )
 }
@@ -219,10 +219,10 @@ function ReceiptLines({ receipt }: { receipt: Receipt }) {
           <th scope="col" className="pb-2 font-bold">
             {t('purchase.order.col.nfts')}
           </th>
-          <th scope="col" className="w-20 pb-2 text-center font-bold md:w-24">
+          <th scope="col" className="w-16 pb-2 text-center font-bold md:w-24">
             {t('purchase.order.col.editions')}
           </th>
-          <th scope="col" className="w-28 pb-2 text-right font-bold">
+          <th scope="col" className="w-24 pb-2 text-right font-bold md:w-28">
             {t('purchase.order.col.subtotal')}
           </th>
         </tr>
@@ -236,11 +236,11 @@ function ReceiptLines({ receipt }: { receipt: Receipt }) {
                   image={line.image}
                   alt=""
                   sizes="70px"
-                  className="size-12 shrink-0 rounded-md md:size-[70px]"
+                  className="size-10 shrink-0 rounded-md sm:size-[70px]"
                 />
                 <div className="min-w-0">
-                  <p className="truncate font-bold">{line.name}</p>
-                  <p className="truncate text-[13px] text-subtle-foreground">
+                  <p className="font-bold break-words">{line.name}</p>
+                  <p className="text-[13px] break-words text-subtle-foreground">
                     {t('purchase.cart.tokenId', { tokenId: line.tokenId })}
                   </p>
                 </div>
@@ -306,8 +306,8 @@ function ThankYouIcon() {
       strokeWidth="2.5"
       strokeLinejoin="round"
     >
-      <path d="M4 34 36 10l32 24v42H4Z" />
-      <path d="M10 40V4h52v36" />
+      <path d="M10 29 4 34v42h64V34l-6-5" />
+      <path d="M10 44V4h52v40" />
       <path d="M4 76 30 50h12l26 26M4 34l24 18M68 34 44 52" />
       <text
         x="36"
