@@ -7,8 +7,18 @@ import {
   type WalletInput,
   WalletInputSchema,
 } from '@/contracts/account'
+import type { Network } from '@/contracts/common'
 import type { RealtimeEvent } from '@/contracts/events'
-import type { AddCartLineInput, Cart, Quote, QuoteIssue, QuoteRequest } from '@/contracts/purchase'
+import {
+  type AddCartLineInput,
+  type Cart,
+  type CreateOrderInput,
+  CreateOrderInputSchema,
+  type Order,
+  type Quote,
+  type QuoteIssue,
+  type QuoteRequest,
+} from '@/contracts/purchase'
 import { add, compare, eth, sub, times } from '@/lib/money/eth'
 import { evaluateCoupon } from './coupons'
 import type { WorldDeps } from './deps'
@@ -20,6 +30,8 @@ import {
   type CollectorRecord,
   NETWORK_FEES,
   type NftRecord,
+  type OrderRecord,
+  PAYMENT_DELAY_MS,
   QUOTE_TTL_MS,
   SESSION_TTL_MS,
   type WalletRecord,
@@ -32,6 +44,8 @@ export interface Ctx {
   token?: string | null
   /** Guest Cart id (X-Cart-Id); ignored once the request carries a Session. */
   cartId?: string | null
+  /** Idempotency-Key header of an Order creation (one per Checkout Attempt). */
+  idempotencyKey?: string | null
 }
 
 /** Every operation the World exposes: [input, output]. */
@@ -54,6 +68,8 @@ export interface Ops {
   'wallets.update': [WalletInput & { id: string }, Wallet]
   'wallets.connect': [{ id: string }, WalletConnection]
   'wallets.disconnect': [{ id: string }, WalletConnection]
+  'orders.create': [CreateOrderInput, Order]
+  'orders.get': [{ id: string }, Order]
 }
 
 /** FNV-1a: a short, stable fingerprint; not cryptographic, only needs to change when content does. */
@@ -74,6 +90,9 @@ export interface Control {
   changePrice(nftId: string, price: string): void
   /** How the simulated Wallet answers the next connection requests. */
   setWalletResponse(response: 'approve' | 'reject'): void
+  /** How simulated payments of new Orders end; 'manual' waits for resolveOrder. */
+  setPaymentOutcome(outcome: 'confirm' | 'reject' | 'manual'): void
+  resolveOrder(orderId: string, status: 'confirmed' | 'rejected'): void
 }
 export type OpName = keyof Ops
 
@@ -138,6 +157,118 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
     if (!record || !collector) return fail('UNAUTHENTICATED', 'Authentication required')
     if (record.expiresAt <= clock.now()) return fail('SESSION_EXPIRED', 'Session expired')
     return succeed(collector)
+  }
+
+  /**
+   * Prices a Cart against current Prices, Availability, Coupon and Network Fee without changing it.
+   * `issues` lists everything that differs from what the Collector last saw.
+   */
+  function computeQuote(record: CartRecord, paymentNetwork: Network) {
+    const issues: QuoteIssue[] = []
+    const lines = record.lines.flatMap((line) => {
+      const found = findEdition(line.nftId, line.editionId)
+      const cap = found ? maxQuantity(found.nft, found.edition.available) : 0
+      if (!found || cap === 0) {
+        issues.push({ kind: 'sold-out', lineId: line.id })
+        return []
+      }
+      const quantity = Math.min(line.quantity, cap)
+      if (quantity < line.quantity) {
+        issues.push({ kind: 'quantity-reduced', lineId: line.id, from: line.quantity, to: quantity })
+      }
+      const unitPrice = found.nft.price
+      if (compare(unitPrice, line.seenPrice) !== 0) {
+        issues.push({ kind: 'price-changed', lineId: line.id, from: line.seenPrice, to: unitPrice })
+      }
+      return [{ line, quantity, unitPrice, lineTotal: times(unitPrice, quantity) }]
+    })
+    const subtotal = lines.reduce((sum, l) => add(sum, l.lineTotal), eth('0'))
+
+    let coupon: Quote['coupon'] = null
+    let discount = eth('0')
+    if (record.couponCode) {
+      const result = evaluateCoupon(state.coupons[record.couponCode], subtotal, clock.now())
+      if (result.status === 'applied') {
+        discount = result.discount
+        coupon = {
+          code: result.coupon.code,
+          status: 'applied',
+          kind: result.coupon.kind,
+          value: result.coupon.value,
+        }
+      } else {
+        issues.push({ kind: 'coupon-dropped', code: record.couponCode, reason: result.status })
+      }
+    }
+
+    const networkFee = eth(NETWORK_FEES[paymentNetwork])
+    const total = add(sub(subtotal, discount), networkFee)
+    const hash = fingerprint([
+      lines.map((l) => [l.line.id, l.line.editionId, l.unitPrice, l.quantity]),
+      coupon?.code ?? null,
+      paymentNetwork,
+      total,
+    ])
+    return { issues, lines, subtotal, coupon, discount, networkFee, total, hash }
+  }
+
+  const toOrder = ({ ownerId: _o, ...order }: OrderRecord): Order => order
+
+  function schedulePayment(orderId: string) {
+    const outcome = state.behavior.paymentOutcome
+    if (outcome === 'manual') return
+    clock.setTimeout(
+      () => resolveOrder(orderId, outcome === 'reject' ? 'rejected' : 'confirmed'),
+      PAYMENT_DELAY_MS,
+    )
+  }
+
+  /** Moves a pending Order to its terminal state; terminal Orders never change again. */
+  function resolveOrder(orderId: string, status: 'confirmed' | 'rejected') {
+    const order = state.orders[orderId]
+    if (!order || order.status !== 'pending') return
+    order.status = status
+    order.version++
+    order.updatedAt = new Date(clock.now()).toISOString()
+
+    if (status === 'confirmed') {
+      order.transactionHash = `0x${fingerprint([order.id, 'tx']).repeat(8)}`
+      order.explorerUrl = `https://explorer.kurio.test/tx/${order.transactionHash}`
+      // Remove only the purchased quantities from the buyer's Cart.
+      const cart = Object.values(state.carts).find((c) => c.ownerId === order.ownerId)
+      if (cart) {
+        for (const bought of order.receipt.lines) {
+          const line = cart.lines.find((l) => l.editionId === bought.editionId)
+          if (line) line.quantity -= bought.quantity
+        }
+        cart.lines = cart.lines.filter((l) => l.quantity > 0)
+        cart.version++
+      }
+    } else {
+      order.rejectionReason = 'payment-declined'
+      // Release the reserved Availability.
+      for (const bought of order.receipt.lines) {
+        const found = findEdition(bought.nftId, bought.editionId)
+        if (found) found.edition.available += bought.quantity
+      }
+      for (const nftId of new Set(order.receipt.lines.map((l) => l.nftId))) {
+        const nft = state.nfts[nftId]
+        if (nft) publishNft(nft)
+      }
+    }
+
+    emit(
+      {
+        type: 'order.updated',
+        eventId: ids.next('evt'),
+        resourceId: order.id,
+        version: order.version,
+        occurredAt: order.updatedAt,
+        userId: order.ownerId,
+        payload: { status: order.status },
+      },
+      order.ownerId,
+    )
   }
 
   const toWallet = ({ ownerId: _o, ...wallet }: WalletRecord): Wallet => wallet
@@ -349,81 +480,146 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
       const resolved = resolveCart(ctx, { create: false })
       if (!resolved.ok) return resolved
       const record = resolved.value
-      const issues: QuoteIssue[] = []
+      const priced = computeQuote(record, paymentNetwork)
 
-      // Bring the Cart in line with current Availability and Prices, recording what changed.
-      const before = record.version
-      record.lines = record.lines.flatMap((line) => {
-        const found = findEdition(line.nftId, line.editionId)
-        const cap = found ? maxQuantity(found.nft, found.edition.available) : 0
-        if (!found || cap === 0) {
-          issues.push({ kind: 'sold-out', lineId: line.id })
-          return []
-        }
-        if (line.quantity > cap) {
-          issues.push({ kind: 'quantity-reduced', lineId: line.id, from: line.quantity, to: cap })
-          line.quantity = cap
-        }
-        if (compare(found.nft.price, line.seenPrice) !== 0) {
-          issues.push({ kind: 'price-changed', lineId: line.id, from: line.seenPrice, to: found.nft.price })
-          line.seenPrice = found.nft.price
-        }
-        return [line]
-      })
-      if (issues.length > 0) record.version = before + 1
-
-      const cart = serializeCart(record)
-      const subtotal = cart.lines.reduce((sum, l) => add(sum, l.lineTotal), eth('0'))
-
-      let coupon: Quote['coupon'] = null
-      let discount = eth('0')
-      if (record.couponCode) {
-        const result = evaluateCoupon(state.coupons[record.couponCode], subtotal, clock.now())
-        if (result.status === 'applied') {
-          discount = result.discount
-          coupon = {
-            code: result.coupon.code,
-            status: 'applied',
-            kind: result.coupon.kind,
-            value: result.coupon.value,
-          }
-        } else {
-          issues.push({ kind: 'coupon-dropped', code: record.couponCode, reason: result.status })
-          record.couponCode = null
-          record.version++
-        }
+      // Bring the Cart in line with what the Quote found, so each change is reported only once.
+      if (priced.issues.length > 0) {
+        record.lines = priced.lines.map(({ line, quantity, unitPrice }) => ({
+          ...line,
+          quantity,
+          seenPrice: unitPrice,
+        }))
+        if (priced.issues.some((i) => i.kind === 'coupon-dropped')) record.couponCode = null
+        record.version++
       }
 
-      const networkFee = eth(NETWORK_FEES[paymentNetwork])
-      const total = add(sub(subtotal, discount), networkFee)
-      const lines = cart.lines.map((l) => ({
-        lineId: l.id,
-        unitPrice: l.unitPrice,
-        quantity: l.quantity,
-        lineTotal: l.lineTotal,
-      }))
-      const hash = fingerprint([
-        lines.map((l) => [l.lineId, l.unitPrice, l.quantity]),
-        coupon?.code,
-        paymentNetwork,
-        total,
-      ])
       const id = ids.next('quote')
       const expiresAt = clock.now() + QUOTE_TTL_MS
-      state.quotes[id] = { id, cartId: record.id, hash, expiresAt }
+      state.quotes[id] = { id, cartId: record.id, hash: priced.hash, expiresAt }
       return succeed({
         id,
-        hash,
-        lines,
-        subtotal,
-        coupon,
-        discount,
+        hash: priced.hash,
+        lines: priced.lines.map(({ line, quantity, unitPrice, lineTotal }) => ({
+          lineId: line.id,
+          unitPrice,
+          quantity,
+          lineTotal,
+        })),
+        subtotal: priced.subtotal,
+        coupon: priced.coupon,
+        discount: priced.discount,
         paymentNetwork,
-        networkFee,
-        total,
-        issues,
+        networkFee: priced.networkFee,
+        total: priced.total,
+        issues: priced.issues,
         expiresAt: new Date(expiresAt).toISOString(),
       })
+    },
+
+    async 'orders.create'(input, ctx) {
+      const auth = authenticate(ctx)
+      if (!auth.ok) return auth
+      const key = ctx.idempotencyKey?.trim()
+      if (!key)
+        return fail('VALIDATION', 'Idempotency-Key required', { idempotencyKey: 'validation.required' })
+      const valid = validate(CreateOrderInputSchema, input)
+      if (!valid.ok) return valid
+
+      // A retried Checkout Attempt resolves to its original Order, whatever happened since (ADR 0003).
+      const slot = `${auth.value.id}:${key}`
+      const attemptPrint = fingerprint(valid.value)
+      const previous = state.idempotency[slot]
+      if (previous) {
+        if (previous.fingerprint !== attemptPrint) {
+          return fail('IDEMPOTENCY_CONFLICT', 'Idempotency-Key reused with different content')
+        }
+        return succeed(toOrder(state.orders[previous.orderId] as OrderRecord))
+      }
+
+      const { quoteId, quoteHash, walletId, paymentNetwork, buyer: _buyer } = valid.value
+      const wallet = ownedWallet(walletId, ctx)
+      if (!wallet.ok) return wallet
+      if (wallet.value.network !== paymentNetwork) {
+        return fail('WALLET_NETWORK_MISMATCH', 'Wallet is on another network')
+      }
+      if (state.walletConnections[walletId] !== 'approved') {
+        return fail('WALLET_NOT_CONNECTED', 'Connect the wallet first')
+      }
+
+      const cart = resolveCart(ctx, { create: false })
+      if (!cart.ok) return cart
+      const quote = state.quotes[quoteId]
+      const priced = computeQuote(cart.value, paymentNetwork)
+      const stale =
+        !quote ||
+        quote.cartId !== cart.value.id ||
+        quote.hash !== quoteHash ||
+        quote.expiresAt <= clock.now() ||
+        priced.issues.length > 0 ||
+        priced.hash !== quote.hash
+      if (stale) return fail('QUOTE_STALE', 'Prices, availability or fees changed; review the new quote')
+      if (priced.lines.length === 0)
+        return fail('VALIDATION', 'Cart is empty', { cart: 'validation.emptyCart' })
+
+      // Reserve Availability while the payment is pending.
+      for (const { line, quantity } of priced.lines) {
+        const found = findEdition(line.nftId, line.editionId)
+        if (found) found.edition.available -= quantity
+      }
+      for (const nftId of new Set(priced.lines.map(({ line }) => line.nftId))) {
+        const nft = state.nfts[nftId]
+        if (nft) publishNft(nft)
+      }
+
+      const now = new Date(clock.now()).toISOString()
+      const order: OrderRecord = {
+        id: ids.next('ord'),
+        ownerId: auth.value.id,
+        status: 'pending',
+        createdAt: now,
+        updatedAt: now,
+        version: 1,
+        transactionHash: null,
+        explorerUrl: null,
+        rejectionReason: null,
+        receipt: {
+          lines: priced.lines.map(({ line, quantity, unitPrice, lineTotal }) => {
+            const found = findEdition(line.nftId, line.editionId)
+            return {
+              nftId: line.nftId,
+              editionId: line.editionId,
+              name: found?.nft.name ?? '',
+              tokenId: found?.nft.tokenId ?? '',
+              image: found?.nft.image ?? '',
+              imageAlt: found?.nft.imageAlt ?? '',
+              editionSize: found?.edition.size ?? null,
+              quantity,
+              unitPrice,
+              lineTotal,
+            }
+          }),
+          subtotal: priced.subtotal,
+          couponCode: priced.coupon?.code ?? null,
+          discount: priced.discount,
+          paymentNetwork,
+          networkFee: priced.networkFee,
+          total: priced.total,
+          walletAddress: wallet.value.address,
+        },
+      }
+      state.orders[order.id] = order
+      state.idempotency[slot] = { fingerprint: attemptPrint, orderId: order.id }
+      schedulePayment(order.id)
+      return succeed(toOrder(order))
+    },
+
+    async 'orders.get'({ id }, ctx) {
+      const auth = authenticate(ctx)
+      if (!auth.ok) return auth
+      const order = state.orders[id]
+      if (!order) return fail('NOT_FOUND', 'Order not found')
+      if (order.ownerId !== auth.value.id) return fail('FORBIDDEN', 'Not your order')
+      return succeed(toOrder(order))
     },
 
     async 'wallets.list'(_input, ctx) {
@@ -507,6 +703,12 @@ export async function createWorld(deps: WorldDeps, _scenario: ScenarioName = 'de
     setWalletResponse(response) {
       state.behavior.walletResponse = response
     },
+
+    setPaymentOutcome(outcome) {
+      state.behavior.paymentOutcome = outcome
+    },
+
+    resolveOrder,
 
     changePrice(nftId, price) {
       const nft = state.nfts[nftId]

@@ -91,7 +91,9 @@ export async function seedState(): Promise<WorldState> {
       ].map((w) => [w.id, w]),
     ),
     walletConnections: {},
-    behavior: { walletResponse: 'approve' },
+    orders: {},
+    idempotency: {},
+    behavior: { walletResponse: 'approve', paymentOutcome: 'confirm' },
   }
 }
 

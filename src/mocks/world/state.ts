@@ -1,5 +1,6 @@
 import type { Collector, Wallet } from '@/contracts/account'
 import type { NftDetail } from '@/contracts/catalog'
+import type { Order } from '@/contracts/purchase'
 import type { Eth } from '@/lib/money/eth'
 
 /** An NFT as stored; `soldOut` is derived from editions when serialized. */
@@ -31,9 +32,19 @@ export interface WorldState {
   wallets: Record<string, WalletRecord>
   /** walletId → current simulated Wallet Connection. */
   walletConnections: Record<string, 'approved' | 'disconnected'>
+  orders: Record<string, OrderRecord>
+  /** `${collectorId}:${Idempotency-Key}` → the Checkout Attempt it identifies. */
+  idempotency: Record<string, { fingerprint: string; orderId: string }>
   /** How simulated externals behave; set by Scenarios and Mock Control. */
-  behavior: { walletResponse: 'approve' | 'reject' }
+  behavior: { walletResponse: 'approve' | 'reject'; paymentOutcome: 'confirm' | 'reject' | 'manual' }
 }
+
+export interface OrderRecord extends Order {
+  ownerId: string
+}
+
+/** How long a simulated payment takes before the Order is confirmed or rejected. */
+export const PAYMENT_DELAY_MS = 2500
 
 export interface WalletRecord extends Wallet {
   ownerId: string

@@ -212,6 +212,123 @@ describe('Wallets', () => {
   })
 })
 
+const BUYER = {
+  displayName: 'Ana Souza',
+  username: 'ana_souza',
+  profileName: 'Ana',
+  email: 'ana@jungle.test',
+  walletAddress: `0x${'a11ce'.padEnd(40, '0')}`,
+  referralCode: 'KURIO',
+  ensName: 'anasouza.eth',
+}
+
+/** Ana with 2 × Emerald Ape (1/10, 5 available) in her Cart, a connected Wallet and a fresh Quote. */
+async function readyToBuy() {
+  const t = await loggedIn()
+  t.world.control.setAvailability(EMERALD.editionId, 5)
+  ok(await t.world.exec('cart.addLine', { ...EMERALD, quantity: 2 }, t.ana))
+  ok(await t.world.exec('wallets.connect', { id: 'w_ana_main' }, t.ana))
+  const quote = ok(await t.world.exec('quote.create', { paymentNetwork: 'ethereum' }, t.ana))
+  const input = {
+    quoteId: quote.id,
+    quoteHash: quote.hash,
+    walletId: 'w_ana_main',
+    paymentNetwork: 'ethereum' as const,
+    buyer: BUYER,
+  }
+  const attempt = (key: string, override: Partial<typeof input> = {}) =>
+    t.world.exec('orders.create', { ...input, ...override }, { ...t.ana, idempotencyKey: key })
+  const availability = async () =>
+    ok(await t.world.exec('cart.get', undefined, t.ana)).lines.find((l) => l.editionId === EMERALD.editionId)
+      ?.edition.available
+  return { ...t, quote, input, attempt, availability }
+}
+
+describe('Orders', () => {
+  it('creates exactly one Order per Checkout Attempt, however often it is retried', async () => {
+    const { attempt } = await readyToBuy()
+    const first = ok(await attempt('key-1'))
+    expect(first).toMatchObject({ status: 'pending', receipt: { subtotal: '2.38', total: '2.396' } })
+
+    expect(ok(await attempt('key-1')).id).toBe(first.id)
+    expect(await attempt('key-1', { walletId: 'w_ana_poly' })).toMatchObject({
+      error: { code: 'IDEMPOTENCY_CONFLICT' },
+    })
+    expect(await attempt('')).toMatchObject({ error: { code: 'VALIDATION' } })
+  })
+
+  it('refuses a Stale Quote, a Wallet on another Network, and an unconnected Wallet', async () => {
+    const { world, ana, attempt } = await readyToBuy()
+    expect(await attempt('k-net', { walletId: 'w_ana_poly' })).toMatchObject({
+      error: { code: 'WALLET_NETWORK_MISMATCH' },
+    })
+    ok(await world.exec('wallets.disconnect', { id: 'w_ana_main' }, ana))
+    expect(await attempt('k-conn')).toMatchObject({ error: { code: 'WALLET_NOT_CONNECTED' } })
+    ok(await world.exec('wallets.connect', { id: 'w_ana_main' }, ana))
+
+    world.control.changePrice(EMERALD.nftId, '1.5')
+    expect(await attempt('k-stale')).toMatchObject({ error: { code: 'QUOTE_STALE', status: 409 } })
+  })
+
+  it('confirms after payment: tells only the buyer, removes only what was bought, freezes the Receipt', async () => {
+    const { world, ana, bruno, clock, events, attempt, availability } = await readyToBuy()
+    const order = ok(await attempt('key-ok'))
+    expect(await availability()).toBe(3)
+    ok(await world.exec('cart.addLine', { ...GOLDEN, quantity: 1 }, ana))
+
+    clock.advance(2500)
+    const confirmed = ok(await world.exec('orders.get', { id: order.id }, ana))
+    expect(confirmed).toMatchObject({ status: 'confirmed', version: 2 })
+    expect(confirmed.transactionHash).toMatch(/^0x[0-9a-f]{64}$/)
+
+    const orderEvents = events.filter((e) => e.event.type === 'order.updated')
+    expect(orderEvents).toEqual([
+      expect.objectContaining({
+        audience: 'col_ana',
+        event: expect.objectContaining({ resourceId: order.id, userId: 'col_ana', version: 2 }),
+      }),
+    ])
+    expect(
+      ok(await world.exec('cart.get', undefined, ana)).lines.map((l) => [l.editionId, l.quantity]),
+    ).toEqual([[GOLDEN.editionId, 1]])
+
+    world.control.changePrice(EMERALD.nftId, '9.99')
+    expect(ok(await world.exec('orders.get', { id: order.id }, ana)).receipt.lines[0]?.unitPrice).toBe('1.19')
+    expect(await world.exec('orders.get', { id: order.id }, bruno)).toMatchObject({
+      error: { code: 'FORBIDDEN' },
+    })
+  })
+
+  it('rejects when payment fails, keeping the Cart and releasing reserved Availability', async () => {
+    const { world, ana, clock, attempt, availability } = await readyToBuy()
+    world.control.setPaymentOutcome('reject')
+    const order = ok(await attempt('key-rej'))
+    clock.advance(2500)
+    expect(ok(await world.exec('orders.get', { id: order.id }, ana))).toMatchObject({
+      status: 'rejected',
+      rejectionReason: 'payment-declined',
+      transactionHash: null,
+    })
+    expect(ok(await world.exec('cart.get', undefined, ana)).lines.map((l) => l.quantity)).toEqual([2])
+    expect(await availability()).toBe(5)
+  })
+
+  it('keeps an Order pending until resolved by hand, and never changes a terminal state', async () => {
+    const { world, ana, clock, attempt } = await readyToBuy()
+    world.control.setPaymentOutcome('manual')
+    const order = ok(await attempt('key-man'))
+    clock.advance(60_000)
+    expect(ok(await world.exec('orders.get', { id: order.id }, ana)).status).toBe('pending')
+
+    world.control.resolveOrder(order.id, 'confirmed')
+    world.control.resolveOrder(order.id, 'rejected')
+    expect(ok(await world.exec('orders.get', { id: order.id }, ana))).toMatchObject({
+      status: 'confirmed',
+      version: 2,
+    })
+  })
+})
+
 describe('Collector isolation', () => {
   it('keeps Favorites per Collector and refuses Guests', async () => {
     const { world, ana, bruno } = await loggedIn()
