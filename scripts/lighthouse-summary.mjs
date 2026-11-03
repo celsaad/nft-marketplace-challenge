@@ -1,7 +1,7 @@
 // Reads the Lighthouse CI runs in docs/lighthouse/<profile>/ and writes docs/lighthouse/summary.md:
 // the MEDIAN of each category and of LCP/CLS/TBT over the 3 runs, per page and profile, plus the
 // tool versions and environment (spec §Performance). Then it keeps only each page's representative
-// HTML report (as <profile>/<page>.html) and deletes the rest, so the repo doesn't carry every run.
+// HTML and JSON reports (as <profile>/<page>.html|.json) and deletes the rest, so the repo doesn't carry every run.
 import { readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { arch, cpus, platform, release, totalmem } from 'node:os'
 import { join } from 'node:path'
@@ -17,7 +17,8 @@ const median = (values) => {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
 }
 const pageName = (url) => (new URL(url).pathname === '/' ? 'Home' : 'NFT detail')
-const fileName = (page) => `${page.toLowerCase().replace(/\s+/g, '-')}.html`
+const fileName = (page, ext = 'html') => `${page.toLowerCase().replace(/\s+/g, '-')}.${ext}`
+const conditions = {}
 const prune = []
 
 let lighthouseVersion = 'unknown'
@@ -30,6 +31,10 @@ for (const profile of PROFILES) {
   for (const run of manifest) {
     const report = JSON.parse(readFileSync(run.jsonPath, 'utf8'))
     lighthouseVersion = report.lighthouseVersion
+    const { formFactor, throttlingMethod, throttling: t, screenEmulation: screen } = report.configSettings
+    conditions[profile] =
+      `${formFactor}, ${screen.width}×${screen.height} @${screen.deviceScaleFactor}x; ${throttlingMethod} throttling: ` +
+      `${t.rttMs} ms RTT, ${Math.round(t.throughputKbps)} Kbps down, CPU ${t.cpuSlowdownMultiplier}× slowdown`
     chromeVersion = report.environment?.hostUserAgent?.match(/Chrome\/[\d.]+/)?.[0] ?? chromeVersion
     const key = pageName(run.url)
     const list = byPage.get(key) ?? []
@@ -39,6 +44,7 @@ for (const profile of PROFILES) {
       cls: report.audits['cumulative-layout-shift'].numericValue,
       tbt: report.audits['total-blocking-time'].numericValue,
       html: run.htmlPath,
+      json: run.jsonPath,
       representative: run.isRepresentativeRun,
     })
     prune.push(run.jsonPath, run.htmlPath)
@@ -53,7 +59,7 @@ for (const profile of PROFILES) {
       lcp: median(runs.map((r) => r.lcp)),
       cls: median(runs.map((r) => r.cls)),
       tbt: median(runs.map((r) => r.tbt)),
-      report: (runs.find((r) => r.representative) ?? runs[0]).html,
+      report: runs.find((r) => r.representative) ?? runs[0],
     })
   }
 }
@@ -69,7 +75,7 @@ const lines = [
   '|---|---|---|---|---|---|---|---|---|',
   ...rows.map(
     (r) =>
-      `| ${r.profile} | [${r.page}](./${r.profile}/${fileName(r.page)}) | ${CATEGORIES.map((c) => mark(c, r.scores[c])).join(' | ')} | ${(r.lcp / 1000).toFixed(2)} s | ${r.cls.toFixed(3)} | ${Math.round(r.tbt)} ms |`,
+      `| ${r.profile} | ${r.page} ([HTML](./${r.profile}/${fileName(r.page)}), [JSON](./${r.profile}/${fileName(r.page, 'json')})) | ${CATEGORIES.map((c) => mark(c, r.scores[c])).join(' | ')} | ${(r.lcp / 1000).toFixed(2)} s | ${r.cls.toFixed(3)} | ${Math.round(r.tbt)} ms |`,
   ),
   '',
   '## Environment',
@@ -77,11 +83,15 @@ const lines = [
   `- Lighthouse ${lighthouseVersion}, ${chromeVersion}, via \`@lhci/cli\` (configs in \`lighthouse/\`)`,
   `- ${platform()} ${release()} (${arch()}), ${cpus()[0]?.model ?? 'unknown CPU'}, ${Math.round(totalmem() / 2 ** 30)} GB RAM`,
   `- Node ${process.version}; optimized build served by \`vite preview\`; default mock Scenario`,
+  ...PROFILES.map((profile) => `- ${profile}: ${conditions[profile]}`),
   `- Generated ${new Date().toISOString()}`,
   '',
 ]
 writeFileSync(join(ROOT, 'summary.md'), lines.join('\n'))
-for (const r of rows) renameSync(r.report, join(ROOT, r.profile, fileName(r.page)))
+for (const r of rows) {
+  renameSync(r.report.html, join(ROOT, r.profile, fileName(r.page)))
+  renameSync(r.report.json, join(ROOT, r.profile, fileName(r.page, 'json')))
+}
 for (const file of prune) rmSync(file, { force: true })
 for (const profile of PROFILES) rmSync(join(ROOT, profile, 'manifest.json'))
 console.log(lines.join('\n'))

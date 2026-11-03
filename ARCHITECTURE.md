@@ -80,6 +80,7 @@ Todo evento tem `{ eventId, type, resourceId, version, occurredAt, userId }` (AD
 | Política | Valor e motivo |
 |---|---|
 | `staleTime` padrão | 30 s: o catálogo também é atualizado por eventos; o carrinho usa 10 s |
+| Tempo limite das requisições | 10 s, num timer JS que aborta a requisição (e não no timeout do XHR), para que o relógio controlado dos testes o alcance; o cancelamento do TanStack Query continua valendo |
 | Retry de consultas | Só para falhas em que nada foi decidido no servidor (503, rede, timeout), até 2 vezes com backoff; nunca em 4xx |
 | Retry de mutações | Nunca automático. A criação de pedido se recupera pela tentativa de checkout, com a mesma chave; o resto pelo "Tentar novamente" da tela |
 | Respostas fora de ordem | A chave da consulta é exatamente a busca enviada, e cada requisição é cancelada pelo `signal` quando a busca muda; a página anterior fica visível com "Atualizando…" |

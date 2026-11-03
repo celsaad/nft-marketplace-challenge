@@ -100,7 +100,8 @@ Sign in as Ana for every flow below. For a clean state, open the URL with `&rese
 
 - **Unit (Vitest):** the simulated backend's rules (isolation between collectors, guest cart merge, coupons, stale quotes, idempotency, order lifecycle, persistence and scenarios), `bigint` ETH math, the realtime event reconciler, and the checkout attempt state machine.
 - **E2E (Playwright):** the challenge's 12 scenarios, on desktop and mobile, against the optimized build, with an HTML report and traces of failures. Visual regression (home, detail, cart and checkout) has committed baselines generated on macOS/Chromium (`-darwin` suffix); CI (Linux) runs only the functional tests.
-- **Current counts:** 110 unit tests; 67 E2E tests per project (desktop and mobile), 133 runs in all, including the 8 visual captures.
+- **Controlled clock:** the time-sensitive scenarios (the `short-session` scenario's 60 s session, the simulated payment delay, the 10 s request timeout) use Playwright's `page.clock` and jump over the wait instead of sitting through it (`e2e/clock.spec.ts`). Latency and events are controlled through the Mock API.
+- **Current counts:** 110 unit tests; 70 E2E tests per project (desktop and mobile), 139 runs in all, including the 8 visual captures.
 - **Lighthouse:** see [docs/lighthouse/summary.md](./docs/lighthouse/summary.md) and the analysis in [ARCHITECTURE.en.md](./ARCHITECTURE.en.md#performance).
 
 ## Image credits

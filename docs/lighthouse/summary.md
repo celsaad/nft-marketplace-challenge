@@ -5,14 +5,16 @@ reports in this folder. Targets: Performance ≥ 90, Accessibility ≥ 95, Best 
 
 | Profile | Page | Performance | Accessibility | Best Practices | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|---|
-| mobile | [Home](./mobile/home.html) | **72** ⚠️ | 100 | 100 | 100 | 5.21 s | 0.000 | 4 ms |
-| mobile | [NFT detail](./mobile/nft-detail.html) | **76** ⚠️ | 100 | 100 | 100 | 4.55 s | 0.000 | 0 ms |
-| desktop | [Home](./desktop/home.html) | 98 | 100 | 100 | 100 | 0.98 s | 0.000 | 0 ms |
-| desktop | [NFT detail](./desktop/nft-detail.html) | 98 | 100 | 100 | 100 | 0.98 s | 0.004 | 0 ms |
+| mobile | Home ([HTML](./mobile/home.html), [JSON](./mobile/home.json)) | **72** ⚠️ | 100 | 100 | 100 | 5.22 s | 0.000 | 5 ms |
+| mobile | NFT detail ([HTML](./mobile/nft-detail.html), [JSON](./mobile/nft-detail.json)) | **76** ⚠️ | 100 | 100 | 100 | 4.55 s | 0.000 | 0 ms |
+| desktop | Home ([HTML](./desktop/home.html), [JSON](./desktop/home.json)) | 98 | 100 | 100 | 100 | 0.98 s | 0.000 | 0 ms |
+| desktop | NFT detail ([HTML](./desktop/nft-detail.html), [JSON](./desktop/nft-detail.json)) | 98 | 100 | 100 | 100 | 0.98 s | 0.004 | 0 ms |
 
 ## Environment
 
 - Lighthouse 12.6.1, Chrome/156.0.0.0, via `@lhci/cli` (configs in `lighthouse/`)
 - darwin 27.2.0 (arm64), Apple M6, 16 GB RAM
 - Node v22.23.4; optimized build served by `vite preview`; default mock Scenario
-- Generated 2026-11-03T23:19:19.999Z
+- mobile: mobile, 412×823 @1.75x; simulate throttling: 150 ms RTT, 1638 Kbps down, CPU 4× slowdown
+- desktop: desktop, 1350×940 @1x; simulate throttling: 40 ms RTT, 10240 Kbps down, CPU 1× slowdown
+- Generated 2026-11-03T23:49:37.752Z

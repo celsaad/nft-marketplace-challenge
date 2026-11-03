@@ -88,6 +88,7 @@ Every event carries `{ eventId, type, resourceId, version, occurredAt, userId }`
 | Policy | Value and reason |
 |---|---|
 | Default `staleTime` | 30 s, since the catalog is also kept fresh by events; the cart uses 10 s |
+| Request timeout | 10 s, on a JS timer that aborts the request (not XHR's own timeout), so the tests' controlled clock reaches it; TanStack Query's cancellation still applies |
 | Query retry | Only for failures where nothing was decided server-side (503, network, timeout): up to 2 times with backoff; never on 4xx |
 | Mutation retry | Never automatic. Order creation recovers through the checkout attempt with the same key; everything else through the screen's "Tentar novamente" |
 | Out-of-order responses | The query key is exactly the search sent, and each request is cancelled through its `signal` when the search changes; the previous page stays visible with "Atualizando…" |
