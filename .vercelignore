@@ -7,3 +7,5 @@ e2e
 test-results
 playwright-report
 .lighthouseci
+.env*.local
+.vercel

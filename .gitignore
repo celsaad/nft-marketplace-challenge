@@ -17,3 +17,4 @@ prototypes/
 # agent worktrees and router cache
 .claude/
 .tanstack/
+.vercel
