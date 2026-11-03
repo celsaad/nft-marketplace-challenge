@@ -129,6 +129,20 @@ function Shell({ children }: { children: React.ReactNode }) {
   )
 }
 
+/** The Buyer Details a Wallet carries, as checkout fields (decisions.md: prefill from the chosen Wallet). */
+function walletDetails(wallet: Wallet): Partial<BuyerDetails> {
+  return {
+    displayName: wallet.displayName,
+    profileName: wallet.profileName,
+    email: wallet.email,
+    referralCode: wallet.referralCode,
+    ensName: wallet.ensName,
+    secondaryWallet: wallet.secondaryAddress ?? '',
+    walletAddress: wallet.address,
+  }
+}
+
+/** Draft first (what the Collector typed), then the chosen Wallet's Buyer Details, then the profile. */
 function defaults(
   me: Collector,
   wallet: Wallet | null,
@@ -143,6 +157,7 @@ function defaults(
     referralCode: '',
     secondaryWallet: '',
     note: '',
+    ...(wallet ? walletDetails(wallet) : {}),
     ...saved,
     // Always the chosen Wallet's address: it is what the Order is paid from.
     walletAddress: wallet?.address ?? '',
@@ -173,7 +188,9 @@ function CheckoutForm({
     return (drafted ?? walletFor(wallets, network))?.id ?? null
   })
   const wallet = wallets.find((w) => w.id === walletId) ?? null
-  const [useOtherWallet, setUseOtherWallet] = useState(draft?.useOtherWallet ?? false)
+  const [useOtherWallet, setUseOtherWallet] = useState(
+    () => draft?.useOtherWallet ?? Boolean(wallet?.secondaryAddress),
+  )
   const [walletError, setWalletError] = useState<string | null>(null)
   const [reviewOpen, setReviewOpen] = useState(false)
   const connection = useWalletConnection(draft?.connectedWalletId ?? null)
@@ -216,13 +233,19 @@ function CheckoutForm({
     setWalletId(next.id)
     setNetwork(next.network)
     setWalletError(null)
-    form.setValue('walletAddress', next.address, { shouldValidate: true })
+    for (const [name, value] of Object.entries(walletDetails(next))) {
+      form.setValue(name as keyof BuyerDetails, value, { shouldValidate: form.formState.isSubmitted })
+    }
+    if (next.secondaryAddress) setUseOtherWallet(true)
   }
   const chooseNetwork = (next: Network) => {
     setNetwork(next)
     const best = walletFor(wallets, next)
-    setWalletId(best?.id ?? null)
-    form.setValue('walletAddress', best?.address ?? '', { shouldValidate: form.formState.isSubmitted })
+    if (best) chooseWallet(best)
+    else {
+      setWalletId(null)
+      form.setValue('walletAddress', '', { shouldValidate: form.formState.isSubmitted })
+    }
   }
 
   const openReview = form.handleSubmit(

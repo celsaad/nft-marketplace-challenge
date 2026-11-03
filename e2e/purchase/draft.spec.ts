@@ -37,6 +37,7 @@ test('discards the draft when a different Collector signs in', async ({ page, mo
   await addToCart(page, NFT.emerald, 1)
   await page.goto('/pagamento')
   await expect(page.getByLabel('Nome de exibição')).toHaveValue('Bruno Lima')
-  await expect(page.getByLabel('Código de indicação')).toHaveValue('')
+  // Bruno's own Wallet details, not Ana's draft.
+  await expect(page.getByLabel('Código de indicação')).toHaveValue('KURIO-BRUNO')
   await expect(page.getByTestId('draft-restored')).toHaveCount(0)
 })

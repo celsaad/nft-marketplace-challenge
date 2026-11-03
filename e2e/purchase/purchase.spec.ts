@@ -15,6 +15,9 @@ test('buys the Cart and shows the Receipt only once the payment is confirmed', a
   await expect(page.getByRole('textbox', { name: 'E-mail', exact: true })).toHaveValue('ana@jungle.test')
   await expect(page.getByLabel('Endereço da carteira')).toHaveValue(`0x${'a11ce'.padEnd(40, '0')}`)
   await expect(page.getByLabel('Nome ENS')).toHaveValue('anasouza')
+  // Buyer Details carried by the chosen (Primary) Wallet.
+  await expect(page.getByLabel('Nome do perfil')).toHaveValue('Ana Coleções')
+  await expect(page.getByLabel('Código de indicação')).toHaveValue('KURIO-ANA')
   await expect(page.getByTestId('quoted-line')).toHaveCount(2)
 
   const dialog = await openReview(page)
