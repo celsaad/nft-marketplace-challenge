@@ -28,7 +28,7 @@ export function fakeClock(start = Date.parse('2026-11-03T12:00:00Z')): Clock & {
     },
     advance(ms) {
       now += ms
-      const due = timers.filter((t) => t.at <= now).sort((a, b) => a.at - b.at)
+      const due = timers.filter((t) => t.at <= now).toSorted((a, b) => a.at - b.at)
       timers = timers.filter((t) => t.at > now)
       for (const t of due) t.fn()
     },

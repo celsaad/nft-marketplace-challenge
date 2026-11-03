@@ -50,14 +50,17 @@ describe('Cart', () => {
   })
 })
 
-describe('Quote', () => {
-  async function anaWithCart() {
-    const t = await loggedIn()
-    ok(await t.world.exec('cart.addLine', { ...EMERALD, quantity: 2 }, t.ana))
-    const cart = ok(await t.world.exec('cart.addLine', { ...GOLDEN, quantity: 1 }, t.ana))
-    return { ...t, cart }
-  }
+/** Ana with 2 × Emerald Ape and 1 × Golden Beat in her Cart. */
+async function anaWithCart() {
+  const t = await loggedIn()
+  ok(await t.world.exec('cart.addLine', { ...EMERALD, quantity: 2 }, t.ana))
+  const cart = ok(await t.world.exec('cart.addLine', { ...GOLDEN, quantity: 1 }, t.ana))
+  return { ...t, cart }
+}
 
+const names = (page: { items: { name: string }[] }) => page.items.map((i) => i.name)
+
+describe('Quote', () => {
   it('totals subtotal, percentage Coupon and the Payment Network’s fee', async () => {
     const { world, ana } = await anaWithCart()
     ok(await world.exec('cart.applyCoupon', { code: 'KURIO10' }, ana))
@@ -331,8 +334,6 @@ describe('Orders', () => {
 })
 
 describe('Catalog', () => {
-  const names = (page: { items: { name: string }[] }) => page.items.map((i) => i.name)
-
   it('pages the default catalog newest first, nine per page', async () => {
     const { world } = await testWorld()
     const first = ok(await world.exec('catalog.list', {}, {}))
