@@ -1,0 +1,3 @@
+# Artwork comes only from the Figma file and CC0 collections
+
+The Figma file contains 4 artworks, too few for a catalog that has to exercise filters and pagination. The rest of the catalog uses public-domain (CC0) NFT art, mainly Nouns, under our own fictional names and token IDs, with the source credited in the README. We considered images from best-selling OpenSea collections and rejected them: that artwork is owned by its studios, and a public deploy and repo would redistribute it and suggest an affiliation that doesn't exist. The Figma artworks keep their places in the layout (hero, featured, first catalog cards), so visual-regression baselines match the design.

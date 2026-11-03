@@ -1,0 +1,3 @@
+# The Payment Network is chosen at checkout, separate from each NFT's Network
+
+An NFT's Network only describes provenance and is used as a catalog filter. At checkout the Collector picks a Payment Network, which must match the chosen Wallet and sets the single Network Fee for the Order. A Cart can therefore mix NFTs minted on different Networks. We rejected single-Network Carts: in a simulation they block the Collector for a reason the UI can't justify, and the challenge never asks for them. Network Fees per Payment Network differ deliberately, so changing the Network gives the Quote a real reason to change.

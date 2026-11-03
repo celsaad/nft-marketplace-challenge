@@ -1,0 +1,3 @@
+# The Session is a bearer token in localStorage, not a cookie
+
+The mock API issues an opaque token with a server-tracked expiry. The client keeps it in `localStorage`, an Axios interceptor sends it, and a `401 SESSION_EXPIRED` sends the Collector to log in again with their place preserved. In a real product an httpOnly cookie is safer against XSS. Here the "server" is a Service Worker, where cookie semantics are awkward. A token also gives tests a deterministic expiry trigger and gives logout and user switching one explicit point to clear the cache and the socket. The token is fictional and grants nothing outside the demo.
