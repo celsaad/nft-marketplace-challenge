@@ -1,9 +1,12 @@
-// The "Entrar | Criar conta" panel from the Figma. Desktop draws it as a modal over the home page;
-// here it is its own route (so `redirect`/`reason` live in the URL and survive a refresh), styled
-// as that same panel. Mobile follows the full-screen frames: big logo, title, form, switch link.
+// The "Entrar | Criar conta" panel from the Figma. Desktop draws it as a modal over the dimmed home
+// page; here it is its own route (so `redirect`/`reason` live in the URL and survive a refresh), and
+// the home behind it is a decorative, inert copy. Mobile follows the full-screen frames: big logo,
+// title, form, switch link.
 import { Link, useRouter } from '@tanstack/react-router'
 import { XIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { PromoCards } from '@/features/catalog/editorial'
+import { Hero } from '@/features/catalog/hero'
 import { useT } from '@/lib/i18n'
 import { cn } from '@/ui/lib/utils'
 import { notifyUnavailable } from '@/ui/unavailable'
@@ -34,65 +37,73 @@ export function AuthCard({
   const search = { redirect }
 
   return (
-    <div className="px-4 pt-10 pb-28 md:px-6 md:pt-[90px] md:pb-24">
-      <section
-        aria-labelledby="auth-title"
-        className="relative mx-auto max-w-[500px] md:overflow-hidden md:bg-card md:shadow-2xl"
-      >
-        <button
-          type="button"
-          onClick={() => router.history.push(redirect ?? '/')}
-          aria-label={t('account.auth.close')}
-          className="absolute top-3 right-3 hidden size-8 place-items-center rounded-sm text-primary hover:text-primary-hover md:grid"
-        >
-          <XIcon aria-hidden className="size-5" />
-        </button>
-
-        <p aria-hidden className="mb-24 text-center text-5xl font-bold tracking-[0.12em] md:hidden">
-          {t('brand.name')}
-        </p>
-
-        <h1 id="auth-title" className="text-center text-2xl font-bold md:sr-only">
-          {mode === 'login' ? t('account.auth.login') : mobileTitle}
-        </h1>
-
-        <nav
-          aria-label={t('account.auth.tabs')}
-          className="hidden items-center justify-center gap-1 pt-12 text-xl font-medium tracking-wide md:flex"
-        >
-          <Link
-            to="/entrar"
-            search={search}
-            className={tab}
-            aria-current={mode === 'login' ? 'page' : undefined}
-          >
-            {t('account.auth.login')}
-          </Link>
-          <span aria-hidden className="h-6 w-px bg-primary" />
-          <Link
-            to="/cadastro"
-            search={search}
-            className={tab}
-            aria-current={mode === 'signup' ? 'page' : undefined}
-          >
-            {t('account.auth.signup')}
-          </Link>
-        </nav>
-
-        <p className="mx-auto mt-10 hidden max-w-[400px] text-center text-xs leading-4 tracking-wide md:block">
-          {intro}
-        </p>
-
-        <div className="mx-auto mt-10 max-w-[340px] md:mt-6">
-          {notice}
-          {children}
+    <div className="relative md:overflow-hidden">
+      <div aria-hidden inert className="pointer-events-none absolute inset-0 hidden md:block">
+        <div className="flex flex-col gap-16 pt-6">
+          <Hero />
+          <PromoCards />
         </div>
+      </div>
+      <div className="relative px-4 pt-10 pb-28 md:bg-background/75 md:px-6 md:pt-[90px] md:pb-24">
+        <section
+          aria-labelledby="auth-title"
+          className="relative mx-auto max-w-[500px] md:overflow-hidden md:bg-card md:shadow-2xl"
+        >
+          <button
+            type="button"
+            onClick={() => router.history.push(redirect ?? '/')}
+            aria-label={t('account.auth.close')}
+            className="absolute top-3 right-3 hidden size-8 place-items-center rounded-sm text-primary hover:text-primary-hover md:grid"
+          >
+            <XIcon aria-hidden className="size-5" />
+          </button>
 
-        <SocialLogin />
+          <p aria-hidden className="mb-24 text-center text-5xl font-bold tracking-[0.12em] md:hidden">
+            {t('brand.name')}
+          </p>
 
-        <p className="mt-12 text-center text-muted-foreground md:hidden">{footer}</p>
-        <div aria-hidden className="mt-12 hidden h-2.5 bg-primary md:block" />
-      </section>
+          <h1 id="auth-title" className="text-center text-2xl font-bold md:sr-only">
+            {mode === 'login' ? t('account.auth.login') : mobileTitle}
+          </h1>
+
+          <nav
+            aria-label={t('account.auth.tabs')}
+            className="hidden items-center justify-center gap-1 pt-12 text-xl font-medium tracking-wide md:flex"
+          >
+            <Link
+              to="/entrar"
+              search={search}
+              className={tab}
+              aria-current={mode === 'login' ? 'page' : undefined}
+            >
+              {t('account.auth.login')}
+            </Link>
+            <span aria-hidden className="h-6 w-px bg-primary" />
+            <Link
+              to="/cadastro"
+              search={search}
+              className={tab}
+              aria-current={mode === 'signup' ? 'page' : undefined}
+            >
+              {t('account.auth.signup')}
+            </Link>
+          </nav>
+
+          <p className="mx-auto mt-10 hidden max-w-[400px] text-center text-xs leading-4 tracking-wide md:block">
+            {intro}
+          </p>
+
+          <div className="mx-auto mt-10 max-w-[340px] md:mt-6">
+            {notice}
+            {children}
+          </div>
+
+          <SocialLogin />
+
+          <p className="mt-12 text-center text-muted-foreground md:hidden">{footer}</p>
+          <div aria-hidden className="mt-12 hidden h-2.5 bg-primary md:block" />
+        </section>
+      </div>
     </div>
   )
 }
