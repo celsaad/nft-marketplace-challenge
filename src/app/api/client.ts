@@ -1,6 +1,7 @@
 // The single Axios instance every REST call goes through (no fake responses here: ADR 0001).
 import { create as createAxios } from 'axios'
 import { HEADERS } from '@/contracts/common'
+import { backendReady } from '../backend-ready'
 import { config } from '../config'
 import { getSession } from '../session/store'
 import { toApiError } from './errors'
@@ -22,12 +23,14 @@ export function setSessionInvalidHandler(handler: () => void) {
   onSessionInvalid = handler
 }
 
-http.interceptors.request.use((request) => {
-  const { token, guestCartId } = getSession()
-  if (token) request.headers.set(HEADERS.authorization, `Bearer ${token}`)
-  else if (guestCartId) request.headers.set(HEADERS.cartId, guestCartId)
-  return request
-})
+http.interceptors.request.use((request) =>
+  backendReady.then(() => {
+    const { token, guestCartId } = getSession()
+    if (token) request.headers.set(HEADERS.authorization, `Bearer ${token}`)
+    else if (guestCartId) request.headers.set(HEADERS.cartId, guestCartId)
+    return request
+  }),
+)
 
 http.interceptors.response.use(undefined, (raw) => {
   const error = toApiError(raw)

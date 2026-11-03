@@ -1,11 +1,10 @@
 // The Mock API: one interface, two adapters (module-design §2) — the Mock Lab panel for people and
 // `window.__mock` for Playwright. Every call changes the mock backend; none touches app state.
+import { SCENARIO_STORAGE_KEY } from './boot-url'
 import type { Failure, Network } from './http/network'
 import type { RealtimeHub } from './realtime/hub'
 import { type NetworkProfile, SCENARIO_NAMES, SCENARIOS, type ScenarioName } from './world/scenarios'
 import type { Control, OpName, World } from './world/world'
-
-export const SCENARIO_STORAGE_KEY = 'kurio.mock.scenario'
 
 export interface MockApi extends Control {
   readonly scenario: ScenarioName

@@ -80,7 +80,8 @@ export function CatalogResults() {
         >
           {data.items.map((nft, i) => (
             <li key={nft.id} className={staggerClass(i)}>
-              <NftCard nft={nft} />
+              {/* The first row is above the fold on every layout and holds the LCP image. */}
+              <NftCard nft={nft} priority={i < 3} />
             </li>
           ))}
         </ul>

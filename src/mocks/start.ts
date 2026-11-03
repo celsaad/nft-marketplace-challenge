@@ -1,12 +1,12 @@
-// The only entry point into the mock backend: src/main.tsx imports this dynamically when
-// VITE_MOCKS=on, awaits it, and only then renders and connects realtime (ADR 0001, 0005).
+// The entry point into the mock backend: src/main.tsx imports this dynamically when VITE_MOCKS=on
+// (after boot-url.ts has read the URL) and, once it resolves, lets the network layer start (ADR 0001, 0005).
 import { setupWorker } from 'msw/browser'
+import type { MockBoot } from './boot-url'
 import { createHttpHandlers } from './http/handlers'
 import { createNetwork } from './http/network'
-import { createMockApi, type MockApi, SCENARIO_STORAGE_KEY } from './mock-api'
+import { createMockApi, type MockApi } from './mock-api'
 import { createRealtimeHub } from './realtime/hub'
 import { browserDeps } from './world/deps'
-import { isScenarioName } from './world/scenarios'
 import { createWorld } from './world/world'
 
 declare global {
@@ -15,35 +15,10 @@ declare global {
   }
 }
 
-function readStoredScenario(): string | null {
-  try {
-    return localStorage.getItem(SCENARIO_STORAGE_KEY)
-  } catch {
-    return null
-  }
-}
-
-/** A Scenario named in the URL sticks, so in-app navigation and a refresh stay in it. */
-function storeScenario(name: string) {
-  try {
-    localStorage.setItem(SCENARIO_STORAGE_KEY, name)
-  } catch {
-    // Storage unavailable: the Scenario lasts for this load only.
-  }
-}
-
-export async function startMocks(config: { apiBase: string; realtimeUrl: string }): Promise<MockApi> {
-  const url = new URL(location.href)
-  const requested = url.searchParams.get('scenario') ?? readStoredScenario()
-  const scenario = isScenarioName(requested) ? requested : 'default'
-  if (url.searchParams.has('scenario')) storeScenario(scenario)
-  const reset = url.searchParams.has('reset')
-  if (reset) {
-    // Reset once; a later refresh must keep the state the user has built since.
-    url.searchParams.delete('reset')
-    history.replaceState(history.state, '', url)
-  }
-
+export async function startMocks(
+  config: { apiBase: string; realtimeUrl: string },
+  { scenario, reset }: MockBoot,
+): Promise<MockApi> {
   const world = await createWorld(browserDeps(), { scenario, reset })
   const network = createNetwork(world.scenario.network)
   const hub = createRealtimeHub(world, config.realtimeUrl)

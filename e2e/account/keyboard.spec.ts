@@ -1,4 +1,4 @@
-// Scenario 11 (account): keyboard-only login and Wallet dialog, errors tied to their fields.
+// Scenario 11 (account): keyboard-only login and Wallet forms, errors tied to their fields.
 import { ANA, expect, open, test } from '../fixtures'
 import { loginAs } from './helpers'
 

@@ -29,7 +29,7 @@ function RootLayout() {
         {t('nav.skipToContent')}
       </a>
       <Header />
-      <main id="main" tabIndex={-1} className="outline-none">
+      <main id="main" tabIndex={-1} className="min-h-dvh outline-none">
         <Outlet />
       </main>
       <Footer />

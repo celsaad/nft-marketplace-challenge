@@ -20,7 +20,7 @@
     "e2e:ui": "playwright test --ui",
     "e2e:update": "playwright test --update-snapshots",
     "e2e:report": "playwright show-report",
-    "lighthouse": "pnpm build && lhci autorun && node scripts/lighthouse-summary.mjs"
+    "lighthouse": "pnpm build && lhci autorun --config=lighthouse/mobile.cjs && lhci autorun --config=lighthouse/desktop.cjs && node scripts/lighthouse-summary.mjs"
   },
   "msw": {
     "workerDirectory": [

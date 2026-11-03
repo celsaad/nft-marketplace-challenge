@@ -1,6 +1,6 @@
 // Realtime client (module-design §8). One socket per Session; events go through the pure
 // reconciler and its effects are applied to the query cache. Spike constraints (ADR 0001):
-// socket.io-client is imported only now (after the mocks started), websocket transport only,
+// socket.io-client is imported only now (after backendReady: the mocks started), websocket transport only,
 // and the token travels in the URL query.
 import type { Socket } from 'socket.io-client'
 import { create } from 'zustand'
@@ -8,6 +8,7 @@ import type { CatalogPage, NftDetail } from '@/contracts/catalog'
 import { REALTIME_EVENT_TYPES, RealtimeEventSchema } from '@/contracts/events'
 import type { Cart } from '@/contracts/purchase'
 import { announce } from '../announcer'
+import { backendReady } from '../backend-ready'
 import { config } from '../config'
 import { queryClient } from '../query/client'
 import { keys } from '../query/keys'
@@ -31,6 +32,7 @@ export async function connectRealtime() {
   useRealtimeStatus.setState({ status: 'connecting' })
 
   const { token, collectorId } = getSession()
+  await backendReady
   const { io } = await import('socket.io-client')
   if (myGeneration !== generation) return
 
