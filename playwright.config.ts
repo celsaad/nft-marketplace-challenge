@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const PORT = 4173
+// Overridable so parallel worktrees never reuse each other's preview server.
+const PORT = Number(process.env.E2E_PORT ?? 4173)
 const vite = 'node ./node_modules/vite/bin/vite.js'
 
 export default defineConfig({
