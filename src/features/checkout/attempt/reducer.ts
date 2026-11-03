@@ -79,8 +79,7 @@ export function attemptReducer<Q extends AttemptQuote>(
     case 'submitFailed':
       if (state.status !== 'submitting') return state
       if (action.error === 'quoteStale') return { ...state, status: 'quoteChanged', nextQuote: null }
-      if (UNKNOWN_OUTCOME.has(action.error))
-        return { ...state, status: 'recovering', error: action.error }
+      if (UNKNOWN_OUTCOME.has(action.error)) return { ...state, status: 'recovering', error: action.error }
       return { ...state, status: 'failed', error: action.error }
     case 'retry':
       return state.status === 'recovering' ? { ...state, status: 'submitting' } : state
