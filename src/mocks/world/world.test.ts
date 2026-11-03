@@ -197,12 +197,11 @@ describe('Wallets', () => {
 
   it('gives every fixture Wallet complete Buyer Details', async () => {
     const { world, ana, bruno } = await loggedIn()
-    for (const who of [ana, bruno]) {
-      for (const wallet of ok(await world.exec('wallets.list', undefined, who))) {
-        expect(
-          wallet.displayName && wallet.profileName && wallet.email && wallet.referralCode && wallet.ensName,
-        ).toBeTruthy()
-      }
+    const lists = await Promise.all([ana, bruno].map((who) => world.exec('wallets.list', undefined, who)))
+    for (const wallet of lists.flatMap(ok)) {
+      expect(
+        wallet.displayName && wallet.profileName && wallet.email && wallet.referralCode && wallet.ensName,
+      ).toBeTruthy()
     }
   })
 

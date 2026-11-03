@@ -1,6 +1,6 @@
-// Wallets (/carteiras), following the Figma's two blocks: "Carteira principal" and "Carteira
-// secundária", each with its "Adicionar". Wallets are listed as cards; create and edit happen in
-// a dialog. Marking a Wallet as Primary moves it (and its badge) to the first block.
+// Wallets (/carteiras), as the Figma draws it: "Carteira principal" edited inline, then "Carteira
+// secundária" with "Igual à carteira principal" (copies the Buyer Details) and "Adicionar".
+// Every Wallet carries the Buyer Details checkout prefills from (GLOSSARY: Buyer Details).
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useSessionStore } from '@/app/session/store'
@@ -11,27 +11,25 @@ import { useT } from '@/lib/i18n'
 import { ErrorState, errorMessageKey, LoadingRegion, RefreshingHint, Skeleton } from '@/ui/feedback'
 import { Badge } from '@/ui/primitives/badge'
 import { Button } from '@/ui/primitives/button'
+import { Checkbox } from '@/ui/primitives/checkbox'
+import { Label } from '@/ui/primitives/label'
 import { networkLabel, providerLabel, shortAddress } from './format'
 import { useSaveWallet, useWallets } from './queries'
-import { WalletDialog, type WalletDialogTarget } from './wallet-dialog'
-
-const editId = (wallet: Wallet) => `wallet-edit-${wallet.id}`
+import { WalletForm } from './wallet-form'
 
 export function WalletsPage() {
   const t = useT()
   const collectorId = useSessionStore((s) => s.collectorId) ?? ''
   const query = useWallets(collectorId)
-  const [target, setTarget] = useState<WalletDialogTarget | null>(null)
-  const [open, setOpen] = useState(false)
-
-  const openDialog = (next: WalletDialogTarget) => {
-    setTarget(next)
-    setOpen(true)
-  }
+  const [addingPrimary, setAddingPrimary] = useState(false)
+  const [addingSecondary, setAddingSecondary] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [sameAsPrimary, setSameAsPrimary] = useState(false)
 
   const wallets = query.data ?? []
   const primary = wallets.find((w) => w.isPrimary)
   const secondary = wallets.filter((w) => !w.isPrimary)
+  const copyFrom = sameAsPrimary ? primary : undefined
 
   return (
     <AccountLayout>
@@ -39,8 +37,8 @@ export function WalletsPage() {
       {query.isPending ? (
         <LoadingRegion className="flex flex-col gap-4">
           <Skeleton className="h-12 w-2/3" />
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
+          <Skeleton className="h-64" />
+          <Skeleton className="h-16" />
         </LoadingRegion>
       ) : query.isError ? (
         <ErrorState error={query.error} onRetry={() => void query.refetch()} />
@@ -49,26 +47,31 @@ export function WalletsPage() {
           <section aria-labelledby="wallets-primary">
             <SectionHeader
               id="wallets-primary"
-              title={t('account.wallets.primaryTitle')}
+              title={t(addingPrimary ? 'account.wallets.newPrimaryTitle' : 'account.wallets.primaryTitle')}
               addId="wallet-add-primary"
               addLabel={t('account.wallets.addPrimary')}
-              onAdd={() => openDialog({ primary: true, returnFocusTo: 'wallet-add-primary' })}
+              onAdd={() => setAddingPrimary(true)}
             >
               <p className="mt-1 text-xs tracking-wide text-muted-foreground">
                 {t('account.wallets.description')}
               </p>
             </SectionHeader>
-            <div className="mt-6 grid lg:grid-cols-2">
-              {primary ? (
-                <WalletCard
-                  wallet={primary}
-                  collectorId={collectorId}
-                  onEdit={() =>
-                    openDialog({ wallet: primary, primary: true, returnFocusTo: editId(primary) })
-                  }
-                />
+            <div className="mt-6">
+              {addingPrimary || !primary ? (
+                <>
+                  {!primary && (
+                    <p className="mb-6 text-sm text-muted-foreground">{t('account.wallets.noPrimary')}</p>
+                  )}
+                  <WalletForm
+                    key="new-primary"
+                    collectorId={collectorId}
+                    primary
+                    onSaved={() => setAddingPrimary(false)}
+                    onCancel={primary ? () => setAddingPrimary(false) : undefined}
+                  />
+                </>
               ) : (
-                <p className="text-sm text-muted-foreground">{t('account.wallets.noPrimary')}</p>
+                <WalletForm key={primary.id} collectorId={collectorId} wallet={primary} primary />
               )}
             </div>
           </section>
@@ -79,18 +82,53 @@ export function WalletsPage() {
               title={t('account.wallets.secondaryTitle')}
               addId="wallet-add-secondary"
               addLabel={t('account.wallets.addSecondary')}
-              onAdd={() => openDialog({ primary: false, returnFocusTo: 'wallet-add-secondary' })}
+              onAdd={() => setAddingSecondary(true)}
+              extra={
+                primary && (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="wallet-same-as-primary"
+                      checked={sameAsPrimary}
+                      onCheckedChange={(checked) => setSameAsPrimary(checked === true)}
+                      aria-describedby="wallet-same-as-primary-hint"
+                      className="rounded-full"
+                    />
+                    <Label htmlFor="wallet-same-as-primary" className="font-normal">
+                      {t('account.wallets.sameAsPrimary')}
+                    </Label>
+                    <span id="wallet-same-as-primary-hint" className="sr-only">
+                      {t('account.wallets.sameAsPrimaryHint')}
+                    </span>
+                  </div>
+                )
+              }
             />
-            {secondary.length === 0 ? (
+
+            {addingSecondary && (
+              <div className="mt-6 rounded-sm border border-border p-4">
+                <h3 className="mb-4 text-sm font-bold">{t('account.wallets.newSecondaryTitle')}</h3>
+                <WalletForm
+                  collectorId={collectorId}
+                  primary={false}
+                  copyFrom={copyFrom}
+                  onSaved={() => setAddingSecondary(false)}
+                  onCancel={() => setAddingSecondary(false)}
+                />
+              </div>
+            )}
+
+            {secondary.length === 0 && !addingSecondary ? (
               <p className="mt-2 text-sm text-muted-foreground">{t('account.wallets.noSecondary')}</p>
             ) : (
-              <ul className="mt-6 grid gap-4 lg:grid-cols-2">
+              <ul className="mt-6 flex flex-col gap-4">
                 {secondary.map((wallet) => (
                   <li key={wallet.id}>
-                    <WalletCard
+                    <SecondaryWallet
                       wallet={wallet}
                       collectorId={collectorId}
-                      onEdit={() => openDialog({ wallet, primary: false, returnFocusTo: editId(wallet) })}
+                      editing={editingId === wallet.id}
+                      copyFrom={editingId === wallet.id ? copyFrom : undefined}
+                      onToggle={() => setEditingId(editingId === wallet.id ? null : wallet.id)}
                     />
                   </li>
                 ))}
@@ -102,8 +140,6 @@ export function WalletsPage() {
           </div>
         </>
       )}
-
-      <WalletDialog collectorId={collectorId} target={target} open={open} onOpenChange={setOpen} />
     </AccountLayout>
   )
 }
@@ -114,6 +150,7 @@ function SectionHeader({
   addId,
   addLabel,
   onAdd,
+  extra,
   children,
 }: {
   id: string
@@ -121,43 +158,54 @@ function SectionHeader({
   addId: string
   addLabel: string
   onAdd: () => void
+  extra?: React.ReactNode
   children?: React.ReactNode
 }) {
   const t = useT()
   return (
-    <div className="flex items-start justify-between gap-4">
+    <div className="flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0">
         <h2 id={id} className="text-base font-bold">
           {title}
         </h2>
         {children}
       </div>
-      <button
-        id={addId}
-        type="button"
-        onClick={onAdd}
-        aria-label={addLabel}
-        className="shrink-0 rounded-sm text-base font-bold text-primary hover:text-primary-hover"
-      >
-        {t('account.wallets.add')}
-      </button>
+      <div className="flex items-center gap-4">
+        {extra}
+        <button
+          id={addId}
+          type="button"
+          onClick={onAdd}
+          aria-label={addLabel}
+          className="shrink-0 rounded-sm text-base font-bold text-primary hover:text-primary-hover"
+        >
+          {t('account.wallets.add')}
+        </button>
+      </div>
     </div>
   )
 }
 
-function WalletCard({
+const editId = (wallet: Wallet) => `wallet-edit-${wallet.id}`
+
+/** A secondary Wallet: a summary row that opens into the same inline form. */
+function SecondaryWallet({
   wallet,
   collectorId,
-  onEdit,
+  editing,
+  copyFrom,
+  onToggle,
 }: {
   wallet: Wallet
   collectorId: string
-  onEdit: () => void
+  editing: boolean
+  copyFrom?: Wallet
+  onToggle: () => void
 }) {
   const t = useT()
   const save = useSaveWallet(collectorId)
 
-  // mutateAsync, not mutate(…, callbacks): this card unmounts when it moves to the Primary block,
+  // mutateAsync, not mutate(…, callbacks): this row unmounts when it moves to the Primary block,
   // and per-call callbacks of an unmounted observer never run.
   const makePrimary = async () => {
     const { id, createdAt: _, ...input } = wallet
@@ -168,47 +216,43 @@ function WalletCard({
       return
     }
     toast.success(t('account.wallets.primaryChanged', { label: wallet.label }))
-    // Keep keyboard focus on the Wallet in its new place.
-    requestAnimationFrame(() => document.getElementById(editId(wallet))?.focus())
+    requestAnimationFrame(() =>
+      document.getElementById('wallets-primary')?.scrollIntoView({ block: 'start' }),
+    )
   }
 
   return (
     <article
       aria-labelledby={`wallet-${wallet.id}-label`}
       data-testid="wallet-card"
-      className="flex h-full flex-col gap-4 rounded-sm border border-border bg-card p-4"
+      className="flex flex-col gap-4 rounded-sm border border-border bg-card p-4"
     >
-      <div className="flex flex-wrap items-center gap-2">
-        <h3 id={`wallet-${wallet.id}-label`} className="min-w-0 truncate font-bold">
-          {wallet.label}
-        </h3>
-        {wallet.isPrimary && (
-          <Badge className="rounded-sm font-bold">{t('account.wallets.primaryBadge')}</Badge>
-        )}
-      </div>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-        <dt className="text-muted-foreground">{t('account.wallets.network')}</dt>
-        <dd>{t(networkLabel(wallet.network))}</dd>
-        <dt className="text-muted-foreground">{t('account.wallets.provider')}</dt>
-        <dd>{t(providerLabel(wallet.provider))}</dd>
-        <dt className="text-muted-foreground">{t('account.wallets.address')}</dt>
-        <dd title={wallet.address} className="truncate">
-          {shortAddress(wallet.address)}
-        </dd>
-      </dl>
-      <div className="mt-auto flex flex-wrap gap-3">
-        <Button
-          id={editId(wallet)}
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={onEdit}
-          aria-label={t('account.wallets.editLabel', { label: wallet.label })}
-          className="border-primary text-primary"
-        >
-          {t('account.wallets.edit')}
-        </Button>
-        {!wallet.isPrimary && (
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+          <h3 id={`wallet-${wallet.id}-label`} className="truncate font-bold">
+            {wallet.label}
+          </h3>
+          <span className="text-muted-foreground">{t(networkLabel(wallet.network))}</span>
+          <span className="text-muted-foreground">{t(providerLabel(wallet.provider))}</span>
+          <span title={wallet.address} className="font-mono text-muted-foreground">
+            {shortAddress(wallet.address)}
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Button
+            id={editId(wallet)}
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onToggle}
+            aria-expanded={editing}
+            aria-label={t(editing ? 'account.wallets.collapse' : 'account.wallets.editLabel', {
+              label: wallet.label,
+            })}
+            className="border-primary text-primary"
+          >
+            {t(editing ? 'account.wallets.collapse' : 'account.wallets.edit')}
+          </Button>
           <Button
             type="button"
             size="sm"
@@ -220,8 +264,19 @@ function WalletCard({
           >
             {t('account.wallets.makePrimary')}
           </Button>
-        )}
+        </div>
       </div>
+      {editing && (
+        <WalletForm
+          collectorId={collectorId}
+          wallet={wallet}
+          primary={false}
+          copyFrom={copyFrom}
+          onSaved={onToggle}
+          onCancel={onToggle}
+        />
+      )}
+      {!editing && wallet.isPrimary && <Badge>{t('account.wallets.primaryBadge')}</Badge>}
     </article>
   )
 }

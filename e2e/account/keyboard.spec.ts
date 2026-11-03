@@ -28,44 +28,42 @@ test('logs in with the keyboard only, reading errors from the fields', async ({ 
   await expect(page).toHaveURL(/\/carteiras$/)
 })
 
-test('operates the Wallet dialog from the keyboard: trapped focus, Esc, focus back on the trigger', async ({
+test('operates the Wallet forms from the keyboard: Figma field order, Enter submits, Editar expands', async ({
   page,
 }) => {
   await open(page, '/')
   await loginAs(page, ANA, 'Ana Souza')
   await page.goto('/carteiras')
 
-  const add = page.getByRole('button', { name: 'Adicionar carteira principal', exact: true })
-  await add.focus()
-  await page.keyboard.press('Enter')
-  const dialog = page.getByRole('dialog', { name: 'Adicionar carteira' })
-  await expect(dialog).toBeVisible()
-  const label = dialog.getByRole('textbox', { name: 'Apelido da carteira' })
-  await expect(label).toBeFocused()
-
-  // Tab cycles inside the dialog and never reaches the page behind it.
-  for (let i = 0; i < 12; i++) {
+  // Tab walks the primary form row by row, as the Figma lays it out.
+  const primary = page.getByRole('region', { name: 'Carteira principal' })
+  const order = ['Nome de exibição', 'Apelido da carteira', 'Rede', 'Nome do perfil', 'Endereço da carteira']
+  await primary.getByRole('textbox', { name: 'Nome de exibição' }).focus()
+  for (const name of order.slice(1)) {
     // Sequential on purpose: each Tab depends on where the previous one left focus.
     // oxlint-disable-next-line no-await-in-loop
     await page.keyboard.press('Tab')
     // oxlint-disable-next-line no-await-in-loop
-    expect(await dialog.evaluate((el) => el.contains(document.activeElement))).toBe(true)
+    expect(await page.evaluate(() => document.activeElement?.getAttribute('aria-invalid'))).toBeNull()
+    // oxlint-disable-next-line no-await-in-loop
+    await expect(
+      primary.getByRole(name === 'Rede' ? 'combobox' : 'textbox', { name, exact: true }),
+    ).toBeFocused()
   }
 
-  // Enter in a field submits: errors appear on the fields.
-  await label.focus()
-  await page.keyboard.press('Enter')
+  // Enter in a field submits; an emptied required field is announced with its error.
+  const label = primary.getByRole('textbox', { name: 'Apelido da carteira' })
+  await label.fill('')
+  await label.press('Enter')
   await expect(label).toHaveAccessibleDescription('Campo obrigatório.')
+  // The form moves focus to the first invalid field (just after rendering the error).
+  await expect(label).toBeFocused()
 
-  await page.keyboard.press('Escape')
-  await expect(dialog).toBeHidden()
-  await expect(add).toBeFocused()
-
-  // Editing returns focus to that Wallet's own Edit button.
+  // A secondary Wallet's Editar is a disclosure: it reports its state and keeps focus.
   const edit = page.getByRole('button', { name: 'Editar Polygon', exact: true })
   await edit.focus()
   await page.keyboard.press('Enter')
-  await expect(page.getByRole('dialog', { name: 'Editar carteira' })).toBeVisible()
-  await page.keyboard.press('Escape')
-  await expect(edit).toBeFocused()
+  const close = page.getByRole('button', { name: 'Fechar edição', exact: true })
+  await expect(close).toHaveAttribute('aria-expanded', 'true')
+  await expect(close).toBeFocused()
 })

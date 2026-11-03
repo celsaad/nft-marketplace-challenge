@@ -1,4 +1,4 @@
-// Scenario 8 (Wallets): create and edit through the dialog, inline validation, Primary moves.
+// Scenario 8 (Wallets): the Figma's inline forms, Buyer Details, validation, Primary moves.
 import { ANA, expect, open, test } from '../fixtures'
 import { loginAs } from './helpers'
 
@@ -11,61 +11,63 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Polygon', exact: true })).toBeVisible()
 })
 
-test('creates a secondary Wallet, with inline errors for a missing field and a wrong-network address', async ({
+test('adds a secondary Wallet that copies the primary Buyer Details, with inline errors first', async ({
   page,
 }) => {
+  const secondary = page.getByRole('region', { name: 'Carteira secundária' })
   await page.getByRole('button', { name: 'Adicionar carteira secundária', exact: true }).click()
-  const dialog = page.getByRole('dialog', { name: 'Adicionar carteira' })
-  await expect(dialog).toBeVisible()
+  const save = secondary.getByRole('button', { name: 'Salvar carteira', exact: true })
 
-  await dialog.getByRole('button', { name: 'Salvar carteira', exact: true }).click()
-  await expect(dialog.getByRole('textbox', { name: 'Apelido da carteira' })).toHaveAccessibleDescription(
+  await save.click()
+  await expect(secondary.getByRole('textbox', { name: 'Apelido da carteira' })).toHaveAccessibleDescription(
     'Campo obrigatório.',
   )
-  await expect(dialog.getByRole('combobox', { name: 'Rede' })).toHaveAccessibleDescription(
+  await expect(secondary.getByRole('combobox', { name: 'Rede' })).toHaveAccessibleDescription(
     'Campo obrigatório.',
   )
 
-  await dialog.getByRole('textbox', { name: 'Apelido da carteira' }).fill('Cofre')
-  await dialog.getByRole('combobox', { name: 'Rede' }).click()
+  await page.getByRole('checkbox', { name: 'Igual à carteira principal' }).check()
+  await expect(secondary.getByRole('textbox', { name: 'Nome de exibição' })).toHaveValue('Ana Souza')
+  await expect(secondary.getByRole('textbox', { name: 'Código de indicação' })).toHaveValue('KURIO-ANA')
+  await expect(secondary.getByRole('textbox', { name: 'Nome ENS' })).toHaveValue('anasouza')
+
+  await secondary.getByRole('textbox', { name: 'Apelido da carteira' }).fill('Cofre')
+  await secondary.getByRole('combobox', { name: 'Rede' }).click()
   await page.getByRole('option', { name: 'Solana' }).click()
-  await dialog.getByRole('textbox', { name: 'Endereço da carteira' }).fill(POLYGON_ADDRESS)
-  await dialog.getByRole('combobox', { name: 'Tipo de carteira' }).click()
+  await secondary.getByRole('textbox', { name: 'Endereço da carteira' }).fill(POLYGON_ADDRESS)
+  await secondary.getByRole('combobox', { name: 'Tipo de carteira' }).click()
   await page.getByRole('option', { name: 'MetaMask' }).click()
-  await dialog.getByRole('button', { name: 'Salvar carteira', exact: true }).click()
-  await expect(dialog.getByRole('textbox', { name: 'Endereço da carteira' })).toHaveAccessibleDescription(
+  await save.click()
+  await expect(secondary.getByRole('textbox', { name: 'Endereço da carteira' })).toHaveAccessibleDescription(
     /O endereço não corresponde à rede escolhida\./,
   )
 
-  await dialog.getByRole('combobox', { name: 'Rede' }).click()
+  await secondary.getByRole('combobox', { name: 'Rede' }).click()
   await page.getByRole('option', { name: 'Polygon' }).click()
-  await dialog.getByRole('button', { name: 'Salvar carteira', exact: true }).click()
+  await save.click()
 
-  await expect(dialog).toBeHidden()
   await expect(page.getByText('Carteira salva.')).toBeVisible()
-  const card = page.getByRole('article', { name: 'Cofre' })
+  const card = secondary.getByRole('article', { name: 'Cofre' })
   await expect(card).toContainText('0xc0ff…0000')
   await expect(card).toContainText('MetaMask')
 
   await page.reload()
-  await expect(page.getByRole('article', { name: 'Cofre' })).toBeVisible()
+  await page.getByRole('button', { name: 'Editar Cofre', exact: true }).click()
+  const saved = page.getByRole('article', { name: 'Cofre' })
+  await expect(saved.getByRole('textbox', { name: 'Nome do perfil' })).toHaveValue('Ana Coleções')
+  await expect(saved.getByRole('textbox', { name: 'E-mail' })).toHaveValue('ana@jungle.test')
 })
 
-test('edits a Wallet and moves the Primary badge', async ({ page }) => {
-  await page.getByRole('button', { name: 'Editar Polygon', exact: true }).click()
-  const dialog = page.getByRole('dialog', { name: 'Editar carteira' })
-  await dialog.getByRole('textbox', { name: 'Apelido da carteira' }).fill('Polygon diária')
-  await dialog.getByRole('button', { name: 'Salvar carteira', exact: true }).click()
-  await expect(dialog).toBeHidden()
-
+test('edits the primary Wallet inline and moves Primary to a secondary one', async ({ page }) => {
   const primary = page.getByRole('region', { name: 'Carteira principal' })
-  const secondary = page.getByRole('region', { name: 'Carteira secundária' })
-  await expect(secondary.getByRole('article', { name: 'Polygon diária' })).toBeVisible()
-
-  await page.getByRole('button', { name: 'Tornar Polygon diária a carteira principal', exact: true }).click()
-  await expect(primary.getByRole('article', { name: 'Polygon diária' })).toContainText('Principal')
-  await expect(secondary.getByRole('article', { name: 'Principal' })).toBeVisible()
-
+  await primary.getByRole('textbox', { name: 'Apelido da carteira' }).fill('Principal diária')
+  await primary.getByRole('button', { name: 'Salvar carteira', exact: true }).click()
+  await expect(page.getByText('Carteira salva.')).toBeVisible()
   await page.reload()
-  await expect(primary.getByRole('article', { name: 'Polygon diária' })).toBeVisible()
+  await expect(primary.getByRole('textbox', { name: 'Apelido da carteira' })).toHaveValue('Principal diária')
+
+  await page.getByRole('button', { name: 'Tornar Polygon a carteira principal', exact: true }).click()
+  await expect(primary.getByRole('textbox', { name: 'Apelido da carteira' })).toHaveValue('Polygon')
+  const secondary = page.getByRole('region', { name: 'Carteira secundária' })
+  await expect(secondary.getByRole('article', { name: 'Principal diária' })).toBeVisible()
 })

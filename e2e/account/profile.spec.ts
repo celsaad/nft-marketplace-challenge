@@ -11,7 +11,7 @@ test.beforeEach(async ({ page }) => {
 
 test('edits the profile and the change survives a reload', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Nome de exibição', exact: true }).fill('Ana Clara')
-  await page.getByRole('textbox', { name: 'Bio', exact: true }).fill('Retratos e arte generativa.')
+  await page.getByRole('textbox', { name: 'Apelido da carteira', exact: true }).fill('Cofre principal')
   await page.getByRole('textbox', { name: 'Nome ENS', exact: true }).fill('anaclara')
   await page.getByRole('button', { name: 'Salvar', exact: true }).click()
 
@@ -20,8 +20,8 @@ test('edits the profile and the change survives a reload', async ({ page }) => {
 
   await page.reload()
   await expect(page.getByRole('textbox', { name: 'Nome de exibição', exact: true })).toHaveValue('Ana Clara')
-  await expect(page.getByRole('textbox', { name: 'Bio', exact: true })).toHaveValue(
-    'Retratos e arte generativa.',
+  await expect(page.getByRole('textbox', { name: 'Apelido da carteira', exact: true })).toHaveValue(
+    'Cofre principal',
   )
   await expect(page.getByRole('textbox', { name: 'Nome ENS', exact: true })).toHaveValue('anaclara')
 })
