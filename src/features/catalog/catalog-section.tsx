@@ -74,12 +74,11 @@ function CatalogTabs() {
         </TabsList>
         <SortSelect />
       </div>
-      {CATALOG_TABS.map((value) => (
-        <TabsContent key={value} value={value} tabIndex={-1}>
-          {/* Radix mounts only the active panel, so only one results grid ever exists. */}
-          <CatalogResults />
-        </TabsContent>
-      ))}
+      {/* One panel that follows the active tab, so the grid (and its query observer) is never
+          remounted: switching tabs keeps the current cards on screen while the next ones load. */}
+      <TabsContent value={tab} tabIndex={-1}>
+        <CatalogResults />
+      </TabsContent>
     </Tabs>
   )
 }
