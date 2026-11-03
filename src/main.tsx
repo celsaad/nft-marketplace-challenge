@@ -16,6 +16,8 @@ declare module '@tanstack/react-router' {
   }
 }
 
+const loadMockLab = () => void import('./mocks/lab/mount').then((m) => m.mountMockLab())
+
 async function boot() {
   // The one place that knows the mock backend exists (ADR 0001). It must be running before the
   // first request and before socket.io-client is loaded, or that client captures the real WebSocket.
@@ -32,6 +34,12 @@ async function boot() {
       </QueryClientProvider>
     </StrictMode>,
   )
+
+  // The Mock Lab panel loads after the page is idle, so it never competes with first paint.
+  if (config.mocksEnabled) {
+    if ('requestIdleCallback' in window) requestIdleCallback(loadMockLab, { timeout: 3000 })
+    else setTimeout(loadMockLab, 1500)
+  }
 }
 
 void boot()

@@ -46,6 +46,20 @@ export function createControl(core: Core, seedJson: string): Control {
       resolveOrder(core, orderId, status)
     },
 
+    inspect() {
+      return {
+        nfts: Object.values(core.state.nfts).map((nft) => ({
+          id: nft.id,
+          name: nft.name,
+          price: nft.price,
+          editions: nft.editions.map(({ id, size, available }) => ({ id, size, available })),
+        })),
+        pendingOrders: Object.values(core.state.orders)
+          .filter((order) => order.status === 'pending')
+          .map(({ id, ownerId, createdAt }) => ({ id, ownerId, createdAt })),
+      }
+    },
+
     reset() {
       for (const timer of core.timers) core.clock.clearTimeout(timer)
       core.timers.clear()
@@ -58,8 +72,9 @@ export function createControl(core: Core, seedJson: string): Control {
     Object.entries(control).map(([name, fn]) => [
       name,
       (...args: unknown[]) => {
-        ;(fn as (...a: unknown[]) => void)(...args)
+        const result = (fn as (...a: unknown[]) => unknown)(...args)
         core.save()
+        return result
       },
     ]),
   ) as unknown as Control

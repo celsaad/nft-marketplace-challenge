@@ -74,6 +74,21 @@ describe('Persistence and Scenarios', () => {
     expect(ok(await reloaded.exec('catalog.get', { id: EMERALD.nftId }, {})).price).toBe('1.19')
   })
 
+  it('lets the Mock Lab inspect NFTs and the Orders still pending', async () => {
+    const clock = fakeClock()
+    const world = await boot(memoryStore(), clock)
+    const { order } = await placeOrder(world)
+
+    const view = world.control.inspect()
+    expect(view.pendingOrders.map((o) => o.id)).toEqual([order.id])
+    expect(view.nfts.find((n) => n.id === EMERALD.nftId)?.editions.map((e) => e.id)).toContain(
+      EMERALD.editionId,
+    )
+
+    clock.advance(2500)
+    expect(world.control.inspect().pendingOrders).toEqual([])
+  })
+
   it('keeps each Scenario deterministic and stored apart from the others', async () => {
     const storage = memoryStore()
     const empty = await boot(storage, fakeClock(), { scenario: 'empty-catalog' })
