@@ -33,6 +33,7 @@ export function ReviewDialog({
   onConnect,
   onConfirm,
   names,
+  returnFocus,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -45,6 +46,8 @@ export function ReviewDialog({
   onConnect: () => void
   onConfirm: () => void
   names: ReadonlyMap<string, string>
+  /** Where focus goes on close: the button that opened it, even if it re-rendered meanwhile. */
+  returnFocus: () => HTMLElement | null
 }) {
   const t = useT()
   const submitting = attempt.state === 'submitting'
@@ -55,6 +58,12 @@ export function ReviewDialog({
     <Dialog open={open} onOpenChange={(next) => !submitting && onOpenChange(next)}>
       <DialogContent
         showCloseButton={false}
+        onCloseAutoFocus={(event) => {
+          const target = returnFocus()
+          if (!target) return
+          event.preventDefault()
+          target.focus()
+        }}
         className="max-h-[92dvh] gap-5 overflow-y-auto border-border bg-card sm:max-w-xl"
         data-testid="review-dialog"
       >

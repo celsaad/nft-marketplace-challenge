@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { Link, Navigate, useNavigate } from '@tanstack/react-router'
 import { ChevronLeftIcon, Loader2Icon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useSessionStore } from '@/app/session/store'
 import type { Collector, Wallet } from '@/contracts/account'
@@ -193,6 +193,7 @@ function CheckoutForm({
   )
   const [walletError, setWalletError] = useState<string | null>(null)
   const [reviewOpen, setReviewOpen] = useState(false)
+  const submitRef = useRef<HTMLButtonElement>(null)
   const connection = useWalletConnection(draft?.connectedWalletId ?? null)
 
   const form = useForm<BuyerDetails>({
@@ -315,6 +316,7 @@ function CheckoutForm({
         <div className="flex flex-col gap-4 md:col-start-2 md:row-start-3">
           {!reviewOpen && <AttemptNotice attempt={attempt} names={names} />}
           <Button
+            ref={submitRef}
             type="submit"
             disabled={submitting}
             className="h-16 rounded-full bg-gradient-to-r from-primary to-[#b97c48] text-lg font-bold text-primary-foreground hover:from-primary-hover md:h-11 md:rounded-md md:bg-primary md:bg-none md:text-sm"
@@ -336,6 +338,7 @@ function CheckoutForm({
         onConnect={() => walletId && connection.connect(walletId)}
         onConfirm={() => void confirm()}
         names={names}
+        returnFocus={() => submitRef.current}
       />
     </Shell>
   )
