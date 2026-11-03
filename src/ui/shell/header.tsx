@@ -1,10 +1,11 @@
 // Desktop/tablet header from the Figma: logo, primary navigation, search, cart, account.
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 import { LogInIcon, SearchIcon, ShoppingCartIcon, UserIcon } from 'lucide-react'
 import { logout } from '@/app/session/session'
 import { useMe } from '@/features/account/queries'
 import { useCartCount } from '@/features/cart/queries'
 import { useT } from '@/lib/i18n'
+import { cn } from '../lib/utils'
 import { Button } from '../primitives/button'
 import {
   DropdownMenu,
@@ -15,13 +16,18 @@ import {
 } from '../primitives/dropdown-menu'
 import { LocaleSwitch } from './locale-switch'
 
-const navLink =
-  'relative py-2 text-sm text-foreground transition-colors hover:text-primary-hover data-[status=active]:font-bold data-[status=active]:text-primary data-[status=active]:after:absolute data-[status=active]:after:inset-x-0 data-[status=active]:after:-bottom-2 data-[status=active]:after:h-0.5 data-[status=active]:after:bg-primary'
+const navLink = 'relative py-2 text-sm text-foreground transition-colors hover:text-primary-hover'
+const navActive =
+  'font-bold text-primary after:absolute after:inset-x-0 after:-bottom-2 after:h-0.5 after:bg-primary'
+
+/** The Figma marks "Mercado" on the market and everything bought from it (detail, cart, checkout, order). */
+const MARKET_PATHS = /^\/(nft|carrinho|pagamento|pedidos)(\/|$)/
 
 export function Header() {
   const t = useT()
   const me = useMe()
   const cartCount = useCartCount()
+  const inMarket = useRouterState({ select: (state) => MARKET_PATHS.test(state.location.pathname) })
 
   return (
     <header className="border-b border-border/60">
@@ -37,7 +43,12 @@ export function Header() {
         <nav aria-label={t('nav.main')} className="hidden md:block">
           <ul className="flex items-center gap-8">
             <li>
-              <Link to="/" className={navLink} activeOptions={{ exact: true }}>
+              <Link
+                to="/"
+                className={navLink}
+                activeProps={{ className: navActive }}
+                activeOptions={{ exact: true, includeSearch: false, includeHash: true }}
+              >
                 {t('nav.home')}
               </Link>
             </li>
@@ -45,8 +56,9 @@ export function Header() {
               <Link
                 to="/"
                 hash="mercado"
-                className={navLink}
-                activeOptions={{ exact: true, includeHash: true }}
+                className={cn(navLink, inMarket && navActive)}
+                activeProps={{ className: navActive }}
+                activeOptions={{ exact: true, includeSearch: false, includeHash: true }}
               >
                 {t('nav.market')}
               </Link>

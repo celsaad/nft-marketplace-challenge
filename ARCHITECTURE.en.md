@@ -218,6 +218,10 @@ The Figma defines the visual identity; the brief defines the behavior. Where the
 
 **Out of scope:** Criadores, Aprenda, blog, newsletter, social networks, the mobile scan button, footer links, social login and "esqueceu a senha". They render as drawn, but lead to a "Not available in this demo" page or show a notice. None of them pretends to have worked.
 
+**Mobile.** The Figma's mobile frames have no top bar. The app keeps a compact one with the logo, language switch, cart and account, because the frames offer no other place to switch language, log in or log out. The tab bar shows on every mobile screen (the Figma drops it on the detail, cart and checkout pages), so navigation is the same across the app. On the detail page, buying sits in the page flow rather than in a fixed bar.
+
+**Checkout breadcrumb.** "Início / Carrinho / Pagamento" (the Figma has "Mercado" in the middle), because it's the actual way back.
+
 **Social icons** are text monograms (f, ig, x, in, yt), with no brand logos.
 
 ## 14. Known limitations
