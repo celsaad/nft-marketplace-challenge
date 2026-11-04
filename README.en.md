@@ -12,10 +12,11 @@ React 19 · TypeScript · Vite · TanStack Router · TanStack Query · Axios · 
 
 ## Running it
 
-Requires **Node 22+** and **Corepack** (bundled with Node; it uses the pnpm version pinned in `package.json`).
+Requires **Node 22+** and **pnpm 12** (the version pinned in `package.json`). On Node 22 to 24, Corepack ships with Node and installs that version for you; from Node 25 on it is no longer bundled, so install pnpm directly.
 
 ```sh
-corepack enable          # once per machine (or use "corepack pnpm" instead of "pnpm")
+corepack enable          # Node 22–24, once per machine
+npm install -g pnpm@12   # Node 25+ (no Corepack)
 pnpm install
 pnpm dev                 # http://localhost:5173, with the simulated backend on
 ```
@@ -100,9 +101,9 @@ Sign in as Ana for every flow below. For a clean state, open the URL with `&rese
 ## Tests
 
 - **Unit (Vitest):** the simulated backend's rules (isolation between collectors, guest cart merge, coupons, stale quotes, idempotency, order lifecycle, persistence and scenarios), `bigint` ETH math, the realtime event reconciler, and the checkout attempt state machine.
-- **E2E (Playwright):** the challenge's 12 scenarios, on desktop and mobile, against the optimized build, with an HTML report and traces of failures. Visual regression (home, detail, cart and checkout) has committed baselines generated on macOS/Chromium (`-darwin` suffix); CI (Linux) runs only the functional tests.
+- **E2E (Playwright):** the challenge's 12 scenarios, on desktop and mobile, against the optimized build, plus a horizontal-scroll check of every screen at 390, 768 and 1440 px (`e2e/layout.spec.ts`), with an HTML report and traces of failures. Visual regression (home, detail, cart and checkout) has committed baselines generated on macOS/Chromium (`-darwin` suffix); CI (Linux) runs only the functional tests.
 - **Controlled clock:** the time-sensitive scenarios (the `short-session` scenario's 60 s session, the simulated payment delay, the 10 s request timeout) use Playwright's `page.clock` and jump over the wait instead of sitting through it (`e2e/clock.spec.ts`). Latency and events are controlled through the Mock API.
-- **Current counts:** 110 unit tests; 70 E2E tests per project (desktop and mobile), 139 runs in all, including the 8 visual captures.
+- **Current counts:** 114 unit tests; 71 E2E tests per project (desktop and mobile), 142 runs in all, including the 8 visual captures (one is skipped on desktop: the filter sheet, which exists only on mobile/tablet).
 - **Lighthouse:** see [docs/lighthouse/summary.md](./docs/lighthouse/summary.md) and the analysis in [ARCHITECTURE.en.md](./ARCHITECTURE.en.md#performance).
 
 ## Image credits

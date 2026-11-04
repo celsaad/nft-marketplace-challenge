@@ -12,10 +12,11 @@ React 19 · TypeScript · Vite · TanStack Router · TanStack Query · Axios · 
 
 ## Como rodar
 
-Requisitos: **Node 22+** e **Corepack** (vem com o Node; ele usa a versão do pnpm fixada em `package.json`).
+Requisitos: **Node 22+** e **pnpm 12** (a versão fixada em `package.json`). Do Node 22 ao 24, o Corepack já vem junto e instala essa versão sozinho; a partir do Node 25 ele não vem mais com o Node, então instale o pnpm direto.
 
 ```sh
-corepack enable          # uma vez por máquina (ou use "corepack pnpm" no lugar de "pnpm")
+corepack enable          # Node 22–24, uma vez por máquina
+npm install -g pnpm@12   # Node 25+ (sem Corepack)
 pnpm install
 pnpm dev                 # http://localhost:5173, com o backend simulado ligado
 ```
@@ -100,9 +101,9 @@ Entre como Ana em todos os fluxos abaixo. Para estado limpo, abra a URL com `&re
 ## Testes
 
 - **Unitários (Vitest):** as regras do backend simulado (isolamento entre colecionadores, merge do carrinho de visitante, cupons, cotação obsoleta, idempotência, ciclo de vida do pedido, persistência e cenários), matemática de ETH com `bigint`, o reconciliador de eventos em tempo real e a máquina de estados da tentativa de checkout.
-- **E2E (Playwright):** os 12 cenários do desafio, em desktop e mobile, contra o build otimizado, com relatório HTML e traces das falhas. A regressão visual (home, detalhe, carrinho e pagamento) tem baselines versionadas, geradas em macOS/Chromium (sufixo `-darwin`); no CI (Linux) rodam só os testes funcionais.
+- **E2E (Playwright):** os 12 cenários do desafio, em desktop e mobile, contra o build otimizado, mais uma verificação de rolagem horizontal em todas as telas a 390, 768 e 1440 px (`e2e/layout.spec.ts`), com relatório HTML e traces das falhas. A regressão visual (home, detalhe, carrinho e pagamento) tem baselines versionadas, geradas em macOS/Chromium (sufixo `-darwin`); no CI (Linux) rodam só os testes funcionais.
 - **Relógio controlado:** os cenários sensíveis a tempo (sessão de 60 s do cenário `short-session`, atraso do pagamento simulado, timeout de 10 s das requisições) usam o `page.clock` do Playwright e pulam a espera em vez de aguardá-la (`e2e/clock.spec.ts`). Latência e eventos são controlados pelo Mock API.
-- **Números atuais:** 110 testes unitários; 70 testes E2E por projeto (desktop e mobile), 139 execuções no total, incluindo as 8 capturas visuais.
+- **Números atuais:** 114 testes unitários; 71 testes E2E por projeto (desktop e mobile), 142 execuções no total, incluindo as 8 capturas visuais (uma é pulada no desktop: a gaveta de filtros, que só existe no mobile/tablet).
 - **Lighthouse:** veja [docs/lighthouse/summary.md](./docs/lighthouse/summary.md) e a análise em [ARCHITECTURE.md](./ARCHITECTURE.md#performance).
 
 ## Créditos das imagens
