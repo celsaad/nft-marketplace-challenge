@@ -5,16 +5,16 @@ reports in this folder. Targets: Performance ≥ 90, Accessibility ≥ 95, Best 
 
 | Profile | Page | Performance | Accessibility | Best Practices | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|---|
-| mobile | Home ([HTML](./mobile/home.html), [JSON](./mobile/home.json)) | **89** ⚠️ | 100 | 100 | 100 | 3.20 s | 0.000 | 5 ms |
-| mobile | NFT detail ([HTML](./mobile/nft-detail.html), [JSON](./mobile/nft-detail.json)) | 90 | 100 | 100 | 100 | 2.93 s | 0.000 | 0 ms |
-| desktop | Home ([HTML](./desktop/home.html), [JSON](./desktop/home.json)) | 100 | 100 | 100 | 100 | 0.62 s | 0.000 | 0 ms |
-| desktop | NFT detail ([HTML](./desktop/nft-detail.html), [JSON](./desktop/nft-detail.json)) | 100 | 100 | 100 | 100 | 0.60 s | 0.004 | 0 ms |
+| mobile | Home ([HTML](./mobile/home.html), [JSON](./mobile/home.json)) | **88** ⚠️ | 100 | 100 | 100 | 3.23 s | 0.000 | 7 ms |
+| mobile | NFT detail ([HTML](./mobile/nft-detail.html), [JSON](./mobile/nft-detail.json)) | 92 | 100 | 100 | 100 | 2.87 s | 0.000 | 0 ms |
+| desktop | Home ([HTML](./desktop/home.html), [JSON](./desktop/home.json)) | 100 | 100 | 100 | 100 | 0.66 s | 0.000 | 0 ms |
+| desktop | NFT detail ([HTML](./desktop/nft-detail.html), [JSON](./desktop/nft-detail.json)) | 100 | 100 | 100 | 100 | 0.62 s | 0.004 | 0 ms |
 
 ## Environment
 
-- Lighthouse 12.6.1, Chrome/156.0.0.0, via `@lhci/cli` (configs in `lighthouse/`)
+- Lighthouse 12.6.1, Chrome/157.0.0.0, via `@lhci/cli` (configs in `lighthouse/`)
 - darwin 27.2.0 (arm64), Apple M6, 16 GB RAM
 - Node v26.13.0; optimized build as deployed at https://nft-marketplace-challenge-one.vercel.app; default mock Scenario
 - mobile: mobile, 412×823 @1.75x; simulate throttling: 150 ms RTT, 1638 Kbps down, CPU 4× slowdown
 - desktop: desktop, 1350×940 @1x; simulate throttling: 40 ms RTT, 10240 Kbps down, CPU 1× slowdown
-- Generated 2026-11-04T16:20:58.047Z
+- Generated 2026-11-04T16:42:31.106Z

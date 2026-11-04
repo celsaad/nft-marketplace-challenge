@@ -248,3 +248,10 @@ ARCHITECTURE.md §12 already lists these as next steps. The new evidence is the 
 - Lighthouse CI configuration: https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/configuration.md
 - Challenge §10: https://github.com/junglegaming/frontend-challenge
 - Repo: `docs/lighthouse/mobile/*.json`, `lighthouse/base.cjs`, `src/main.tsx`, `src/routes/index.tsx`, `src/routes/__root.tsx`, `src/features/catalog/editorial.tsx`, `src/features/catalog/hero.tsx`, `src/ui/nft-image.tsx`, `public/mockServiceWorker.js`, `node_modules/msw/src/core/utils/cookieStore.ts`
+
+## Follow-up (2026-11-04): results on the deployment
+
+- **Auditing the deployment** (HTTPS, HTTP/2, Brotli on Vercel; same asset hashes as `pnpm build`), 3-run median, Chrome 156: mobile home 89, detail 90; desktop 100 and 100.
+- **Candidate 2 (one `vendor` chunk, 28 → 20 startup files)**, Chrome 157: locally over HTTP/2 + Brotli home went from 88/93/93 to 92/95/95 and detail stayed flat (97/94 → 96/95/95). On the deployment: home 88, detail 92. The home gain did not carry over; the change is within run-to-run noise there.
+- **Candidate 3, `zod/mini` in the route schemas only: no effect expected.** Every REST response is parsed with the full zod contracts (`src/app/api/endpoints.ts:34`), including the catalog page the home LCP depends on, so the full library stays on the critical path regardless of the route schemas.
+- **Candidate 5, deferring the promo and journal images** with an IntersectionObserver (one screen of margin) instead of native lazy loading: home image bytes at load fell from 201 KB to 25 KB locally, and the score did not change (90/94/94 vs 89/94/94). Reverted: no score effect, and a full-page visual baseline would no longer show those images.
