@@ -1,30 +1,31 @@
-// Helpers for the purchase specs. Collectors sign in through the login form (fixtures.signIn).
-// Cart Lines are added through the same REST API the NFT detail page uses, as setup; every
-// assertion still observes the UI.
+// Helpers for the purchase specs. Collectors sign in through the login form (fixtures.signIn) and
+// fill their Cart from the NFT detail page, as anyone would; the mock backend is read only through
+// the Mock API (window.__mock), never through storage.
 import type { Page } from '@playwright/test'
-import { signIn } from '../fixtures'
+import { expect, mockOf, signIn } from '../fixtures'
 
 export { signIn }
-
-export const SESSION_KEY = 'kurio.session'
 
 /** NFTs from the deterministic catalog (src/mocks/world/catalog-fixtures.ts). */
 export const NFT = {
   emerald: {
     nftId: 'nft_emerald-ape-042',
     editionId: 'ed_emerald-ape-042_50',
+    edition: '1/50',
     name: 'Emerald Ape #042',
     price: '1.19',
   },
   sage: {
     nftId: 'nft_sage-nomad-009',
     editionId: 'ed_sage-nomad-009_10',
+    edition: '1/10',
     name: 'Sage Nomad #009',
     price: '1.69',
   },
   ivory: {
     nftId: 'nft_ivory-baron-088',
     editionId: 'ed_ivory-baron-088_1',
+    edition: '1/1',
     name: 'Ivory Baron #088',
     price: '1.79',
   },
@@ -36,28 +37,24 @@ export async function reload(page: Page) {
   await page.waitForFunction(() => Boolean(window.__mock))
 }
 
-/** Adds a Cart Line as the current visitor (Collector or Guest) through the REST API. */
-export async function addToCart(page: Page, line: { nftId: string; editionId: string }, quantity = 1) {
-  await page.evaluate(
-    async ({ input, key }) => {
-      const stored = JSON.parse(localStorage.getItem(key) ?? '{}')
-      const state = stored.state ?? {}
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-      if (state.token) headers.Authorization = `Bearer ${state.token}`
-      else if (state.guestCartId) headers['X-Cart-Id'] = state.guestCartId
-      const response = await fetch('/api/cart/lines', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(input),
-      })
-      if (!response.ok) throw new Error(`add to cart failed: ${response.status}`)
-      const cart = await response.json()
-      if (!state.token && state.guestCartId !== cart.id) {
-        localStorage.setItem(key, JSON.stringify({ state: { ...state, guestCartId: cart.id }, version: 1 }))
-      }
-    },
-    { input: { nftId: line.nftId, editionId: line.editionId, quantity }, key: SESSION_KEY },
-  )
+/** Adds a Cart Line as the current visitor (Collector or Guest) from the NFT's detail page. */
+export async function addToCart(
+  page: Page,
+  line: { nftId: string; edition: string; name: string },
+  quantity = 1,
+) {
+  await page.goto(`/nft/${line.nftId}`)
+  await page.getByRole('radio', { name: line.edition }).click()
+  for (let i = 1; i < quantity; i++) {
+    // Sequential clicks on the same stepper.
+    // oxlint-disable-next-line no-await-in-loop
+    await page.getByRole('button', { name: 'Aumentar quantidade' }).click()
+  }
+  await page
+    .getByRole('button', { name: /^Comprar/ })
+    .filter({ visible: true })
+    .click()
+  await expect(page.getByText(`${quantity}× ${line.name} (${line.edition}) no carrinho.`)).toBeVisible()
 }
 
 /** Ana with a Cart of two Emerald Ape #042 and one Sage Nomad #009, on the given page. */
@@ -91,13 +88,9 @@ export async function connectInReview(page: Page) {
   })
 }
 
-/** The statuses of the Orders the mock backend holds (read from the persisted World, never from app state). */
+/** The statuses of the Orders the mock backend holds, read through the Mock API. */
 export async function orderStatuses(page: Page): Promise<string[]> {
-  return page.evaluate(() => {
-    const scenario = localStorage.getItem('kurio.mock.scenario') ?? window.__mock?.scenario ?? 'default'
-    const world = JSON.parse(localStorage.getItem(`kurio.mock.v1.${scenario}`) ?? '{}')
-    return Object.values<{ status: string }>(world.orders ?? {}).map((o) => o.status)
-  })
+  return (await mockOf(page).inspect()).orders.map((order) => order.status)
 }
 
 export const orderCount = async (page: Page) => (await orderStatuses(page)).length

@@ -102,11 +102,8 @@ test.describe('Cart', () => {
   test('keeps a Guest Cart after a refresh and after logging in', async ({ page }) => {
     await open(page, '/carrinho')
     await expect(page.getByText('Seu carrinho está vazio')).toBeVisible()
-    await page.waitForFunction(
-      () => JSON.parse(localStorage.getItem('kurio.session') ?? '{}').state?.guestCartId,
-    )
     await addToCart(page, NFT.sage, 2)
-
+    await page.goto('/carrinho')
     await reload(page)
     const line = page.getByRole('listitem', { name: NFT.sage.name })
     await expect(line.getByTestId('line-quantity')).toHaveText('2')
@@ -123,11 +120,8 @@ test.describe('Cart', () => {
 
   test('sends a Guest who checks out to login, keeping the way back', async ({ page }) => {
     await open(page, '/carrinho')
-    await page.waitForFunction(
-      () => JSON.parse(localStorage.getItem('kurio.session') ?? '{}').state?.guestCartId,
-    )
     await addToCart(page, NFT.emerald, 1)
-    await reload(page)
+    await page.goto('/carrinho')
     await page.getByRole('link', { name: 'Conectar e finalizar' }).click()
     await expect(page).toHaveURL(/\/entrar\?redirect=%2Fpagamento/)
   })

@@ -76,6 +76,7 @@ export function MockLab({ api }: { api: MockApi }) {
   const availableId = useId()
 
   const refresh = () => setView(api.inspect())
+  const pendingOrders = view.orders.filter((order) => order.status === 'pending')
   // While open, keep the pickers in sync with the world (e.g. Orders resolving on their own).
   useEffect(() => {
     if (!open) return
@@ -321,8 +322,8 @@ export function MockLab({ api }: { api: MockApi }) {
             </NativeSelect>
             <div className="flex flex-col gap-2">
               <p className="text-xs font-bold">Pending Orders</p>
-              {view.pendingOrders.length === 0 && <p className="text-xs text-muted-foreground">None.</p>}
-              {view.pendingOrders.map((order) => (
+              {pendingOrders.length === 0 && <p className="text-xs text-muted-foreground">None.</p>}
+              {pendingOrders.map((order) => (
                 <div key={order.id} className="flex items-center justify-between gap-2 text-xs">
                   <span className="truncate">{order.id}</span>
                   <span className="flex gap-1">

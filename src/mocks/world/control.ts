@@ -54,9 +54,12 @@ export function createControl(core: Core, seedJson: string): Control {
           price: nft.price,
           editions: nft.editions.map(({ id, size, available }) => ({ id, size, available })),
         })),
-        pendingOrders: Object.values(core.state.orders)
-          .filter((order) => order.status === 'pending')
-          .map(({ id, ownerId, createdAt }) => ({ id, ownerId, createdAt })),
+        orders: Object.values(core.state.orders).map(({ id, ownerId, status, createdAt }) => ({
+          id,
+          ownerId,
+          status,
+          createdAt,
+        })),
       }
     },
 

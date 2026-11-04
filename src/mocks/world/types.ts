@@ -82,7 +82,7 @@ export interface Control {
   resolveOrder(orderId: string, status: 'confirmed' | 'rejected'): void
   /** Restores the Scenario's known state (and saves it). */
   reset(): void
-  /** Read-only view for the Mock Lab's pickers: NFTs with their Editions, and pending Orders. */
+  /** Read-only view for the Mock Lab and tests: NFTs with their Editions, and every Order's status. */
   inspect(): {
     nfts: {
       id: string
@@ -90,7 +90,7 @@ export interface Control {
       price: string
       editions: { id: string; size: number | null; available: number }[]
     }[]
-    pendingOrders: { id: string; ownerId: string; createdAt: string }[]
+    orders: { id: string; ownerId: string; status: Order['status']; createdAt: string }[]
   }
 }
 
