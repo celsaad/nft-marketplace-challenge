@@ -7,7 +7,6 @@ import { useT } from '@/lib/i18n'
 import { Announcer } from '@/ui/announcer'
 import { Button } from '@/ui/primitives/button'
 import { Toaster } from '@/ui/primitives/sonner'
-import { TooltipProvider } from '@/ui/primitives/tooltip'
 import { SectionBoundary } from '@/ui/section-boundary'
 
 export interface RouterContext {
@@ -22,7 +21,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootLayout() {
   const t = useT()
   return (
-    <TooltipProvider>
+    <>
       <a
         href="#main"
         className="sr-only z-50 rounded-md bg-primary px-4 py-2 font-bold text-primary-foreground focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
@@ -41,7 +40,7 @@ function RootLayout() {
       </SectionBoundary>
       <Announcer />
       <Toaster position="top-center" />
-    </TooltipProvider>
+    </>
   )
 }
 

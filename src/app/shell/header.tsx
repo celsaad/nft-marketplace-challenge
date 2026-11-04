@@ -1,19 +1,12 @@
 // Desktop/tablet header from the Figma: logo, primary navigation, search, cart, account.
 import { Link, useRouterState } from '@tanstack/react-router'
 import { LogInIcon, SearchIcon, ShoppingCartIcon, UserIcon } from 'lucide-react'
-import { logout } from '@/app/session/session'
 import { useMe } from '@/features/account/queries'
 import { useCartCount } from '@/features/cart/queries'
 import { useT } from '@/lib/i18n'
 import { cn } from '@/ui/lib/utils'
 import { Button } from '@/ui/primitives/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/ui/primitives/dropdown-menu'
+import { AccountMenu, DeferredMenu } from './deferred-menu'
 import { LocaleSwitch } from './locale-switch'
 
 const navLink = 'relative py-2 text-sm text-foreground transition-colors hover:text-primary-hover'
@@ -98,24 +91,15 @@ export function Header() {
           </Button>
 
           {me ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <DeferredMenu
+              menu={AccountMenu}
+              trigger={
                 <Button variant="outline" size="sm" className="border-primary text-primary">
                   <UserIcon aria-hidden />
                   <span className="max-w-28 truncate">{me.displayName}</span>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link to="/perfil">{t('nav.profile')}</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/carteiras">{t('nav.wallets')}</Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => void logout()}>{t('header.logout')}</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              }
+            />
           ) : (
             <Button asChild size="sm" className="bg-primary text-primary-foreground hover:bg-primary-hover">
               <Link to="/entrar">

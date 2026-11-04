@@ -7,6 +7,7 @@ import { config } from './app/config'
 import { queryClient } from './app/query/client'
 import { RouteError } from './app/route-error'
 import { bootSession } from './app/session/session'
+import { localeReady } from './lib/i18n'
 import { takeMockBoot } from './mocks/boot-url'
 import { routeTree } from './routeTree.gen'
 import './styles.css'
@@ -31,6 +32,8 @@ const loadMockLab = () => void import('./mocks/lab/mount').then((m) => m.mountMo
 
 async function boot() {
   bootSession()
+  // Instant for PT-BR; another saved locale loads its dictionary first (the static shell shows meanwhile).
+  await localeReady
   // Render at once: route chunks, styles and static content load while the mock backend starts.
   createRoot(document.getElementById('root') as HTMLElement).render(
     <StrictMode>
