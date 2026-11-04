@@ -1,13 +1,13 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router'
+import { Footer } from '@/app/shell/footer'
+import { Header } from '@/app/shell/header'
+import { MobileTabBar } from '@/app/shell/mobile-tab-bar'
 import { useT } from '@/lib/i18n'
 import { Announcer } from '@/ui/announcer'
 import { Button } from '@/ui/primitives/button'
 import { Toaster } from '@/ui/primitives/sonner'
 import { TooltipProvider } from '@/ui/primitives/tooltip'
-import { Footer } from '@/ui/shell/footer'
-import { Header } from '@/ui/shell/header'
-import { MobileTabBar } from '@/ui/shell/mobile-tab-bar'
 
 export interface RouterContext {
   queryClient: QueryClient

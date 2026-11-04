@@ -1,14 +1,14 @@
 import { LanguagesIcon } from 'lucide-react'
 import { LOCALES } from '@/contracts/common'
 import { setLocale, useLocale, useT } from '@/lib/i18n'
-import { Button } from '../primitives/button'
+import { Button } from '@/ui/primitives/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from '../primitives/dropdown-menu'
+} from '@/ui/primitives/dropdown-menu'
 
 export function LocaleSwitch() {
   const t = useT()

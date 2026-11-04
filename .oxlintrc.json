@@ -58,8 +58,35 @@
           {
             "patterns": [
               {
-                "group": ["@/mocks", "@/mocks/*", "**/mocks", "**/mocks/*"],
-                "message": "App code must never import the mock backend. Only src/main.tsx may load it (ADR 0001, module-design \u00a7Layout)."
+                "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                "message": "App code must never import the mock backend. Only src/main.tsx may load it (ADR 0001, module-design §Layout)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/ui/**", "src/lib/**", "src/contracts/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/mocks", "@/mocks/**", "**/mocks", "**/mocks/**"],
+                "message": "App code must never import the mock backend. Only src/main.tsx may load it (ADR 0001, module-design §Layout)."
+              },
+              {
+                "group": [
+                  "@/features",
+                  "@/features/**",
+                  "@/routes",
+                  "@/routes/**",
+                  "@/app/shell",
+                  "@/app/shell/**"
+                ],
+                "message": "Shared layers (ui, lib, contracts) must not depend on features, routes or the app shell; compose them in src/app or src/routes instead."
               }
             ]
           }

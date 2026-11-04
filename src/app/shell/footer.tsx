@@ -1,8 +1,8 @@
 // Footer from the Figma: feature band with newsletter, contact band, link columns.
 // Every action here is out of scope, so each says so instead of pretending to work.
 import { useT } from '@/lib/i18n'
-import { Input } from '../primitives/input'
-import { notifyUnavailable, UnavailableLink } from '../unavailable'
+import { Input } from '@/ui/primitives/input'
+import { notifyUnavailable, UnavailableLink } from '@/ui/unavailable'
 
 const FEATURES = [
   { letter: 'W', title: 'footer.walletSecurity.title', body: 'footer.walletSecurity.body' },

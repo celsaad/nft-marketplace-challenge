@@ -5,15 +5,15 @@ import { logout } from '@/app/session/session'
 import { useMe } from '@/features/account/queries'
 import { useCartCount } from '@/features/cart/queries'
 import { useT } from '@/lib/i18n'
-import { cn } from '../lib/utils'
-import { Button } from '../primitives/button'
+import { cn } from '@/ui/lib/utils'
+import { Button } from '@/ui/primitives/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '../primitives/dropdown-menu'
+} from '@/ui/primitives/dropdown-menu'
 import { LocaleSwitch } from './locale-switch'
 
 const navLink = 'relative py-2 text-sm text-foreground transition-colors hover:text-primary-hover'
