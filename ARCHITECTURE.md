@@ -145,24 +145,25 @@ Auditoria com Lighthouse CI (`pnpm lighthouse`, configs em `lighthouse/`) contra
 
 | Perfil | Página | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|---|
-| mobile | Home | 90 | 100 | 100 | 100 | 3,31 s | 0,000 | 5 ms |
-| mobile | Detalhe do NFT | 95 | 100 | 100 | 100 | 2,87 s | 0,000 | 1 ms |
+| mobile | Home | 93 | 100 | 100 | 100 | 3,04 s | 0,000 | 8 ms |
+| mobile | Detalhe do NFT | 95 | 100 | 100 | 100 | 2,86 s | 0,000 | 0 ms |
 | desktop | Home | 100 | 100 | 100 | 100 | 0,62 s | 0,000 | 0 ms |
-| desktop | Detalhe do NFT | 100 | 100 | 100 | 100 | 0,62 s | 0,004 | 0 ms |
+| desktop | Detalhe do NFT | 100 | 100 | 100 | 100 | 0,58 s | 0,004 | 0 ms |
 
-**Todas as metas são atingidas nos dois perfis. A home no mobile não tem folga: a mediana é exatamente 90, e as duas auditorias anteriores ao cabeçalho estático deram 89 e 88.**
+**Todas as metas são atingidas nos dois perfis. A home no mobile tem a menor folga, 3 pontos.**
 
 A auditoria anterior servia o build com `vite preview` (HTTP/1.1, sem compressão) e dava 72 e 76 no mobile. O app não mudou entre as duas auditorias; o servidor, sim. O throttling simulado do Lighthouse refaz as requisições da página numa rede modelada. Em HTTP/1.1, ele distribui os ~27 arquivos de JS iniciais em 6 conexões que buscam um arquivo de cada vez, e os bytes sem compressão passam todos pelo link simulado de 1,6 Mbps. Em HTTP/2 com Brotli, os mesmos arquivos dividem uma conexão e vão comprimidos. Detalhes e medições: [docs/lighthouse/improvement-research.md](./docs/lighthouse/improvement-research.md).
 
 Por que a home no mobile tem a menor folga (perfil padrão do Lighthouse: 4G lento simulado, CPU 4× mais lenta):
 - O elemento de LCP é a imagem do primeiro card do catálogo. Ela só existe depois que a API do catálogo responde, e aqui a API é o backend simulado, que roda no navegador: o chunk dele (60 KB gzip) precisa baixar, executar e registrar o service worker antes da primeira requisição, e o cenário padrão ainda soma 150–400 ms de latência simulada. Em produção, com uma API real, esse chunk e o service worker não existiriam.
-- O primeiro paint (2,3 s na home, 1,4 s no detalhe) agora só precisa do HTML e do CSS do cabeçalho estático, mas o app ainda carrega cerca de 250 KB gzip de JS na inicialização (React DOM, Zod 4, Axios, TanStack Router/Query, Radix), que disputam com as imagens do catálogo o link simulado de 1,6 Mbps.
+- O primeiro paint (2,0 s na home, 1,2 s no detalhe) só precisa do HTML e do CSS do cabeçalho estático, mas o app ainda carrega cerca de 200 KB gzip de JS na inicialização (React DOM, Zod 4, Axios, TanStack Router/Query, Radix), que disputam com as imagens do catálogo o link simulado de 1,6 Mbps.
 - O backend simulado fica no build auditado de propósito: o enunciado proíbe simplificações só para a auditoria (ADR 0005).
 
 O que foi feito, medido antes e depois:
 - **Chunk do backend simulado de 173 KB para 60 KB gzip:** o MSW usa `tldts` (a lista de sufixos públicos) só para validar domínio de cookies; o app não usa cookies (token em header), então ela é trocada por um stub de 10 linhas (`src/mocks/tldts-stub.ts`).
 - **O app renderiza antes do backend simulado estar pronto:** o cliente HTTP e o cliente de tempo real esperam `backendReady`, então a ordem do ADR 0001 continua valendo (nenhuma requisição e nenhum socket.io-client antes do worker), mas o shell, as rotas e os skeletons aparecem enquanto o mock sobe.
 - **Um chunk `vendor`** com as bibliotecas que toda página precisa antes do primeiro paint (React, TanStack Router e Query, Axios, zod, zustand, tailwind-merge, clsx, cva): 28 arquivos iniciais viraram 20. Localmente, em HTTP/2 + Brotli, a home no mobile foi de 88–93 para 92–95; na versão publicada, a diferença fica dentro da variação entre execuções (89 → 88, detalhe 90 → 92).
+- **Menus do cabeçalho, dicionário EN e um provider sem uso fora do bundle inicial:** os botões de idioma e de conta aparecem na hora, e o código do menu Radix carrega ao passar o mouse, focar ou tocar (o clique o abre; pelo teclado, o foco vai para o primeiro item, como no Radix). Só o PT-BR vai na inicialização, e o EN carrega antes de ser aplicado. O `TooltipProvider` era montado, mas não havia nenhum tooltip. JS inicial de 252,6 para 197,7 KB gzip, de 20 para 9 arquivos. Na versão publicada: home no mobile de 90 para 93.
 - **Cabeçalho estático no `index.html`:** a caixa do cabeçalho e o logo (iguais para todo visitante e idioma) aparecem só com o CSS, e o React os substitui no primeiro render. Na versão publicada: home no mobile de 88 para 90, detalhe de 92 para 95, CLS continua 0.
 - **Primeira linha de cards** com carregamento imediato e prioridade alta (imagem de LCP).
 - **CLS no detalhe de 0,081 para 0,004:** `<main>` reserva a altura da tela, então o rodapé não salta quando o conteúdo chega.
@@ -171,7 +172,7 @@ O que foi feito, medido antes e depois:
 
 Testado e descartado: adiar as imagens das promoções e do journal até estarem a uma tela de distância (o lazy loading nativo do Chrome começa a ~1250 px, então no celular elas carregam junto com o catálogo): reduziu as imagens da home no carregamento de 201 KB para 25 KB, mas não mudou a nota, e as esconderia da baseline visual de página inteira. Também `modulepreload` do chunk do mock (compete por banda com o JS do app e piorou o LCP) e adiar o mock para depois do primeiro frame (sem efeito).
 
-Próximos passos, na ordem da nota de pesquisa: carregar sob demanda o menu da conta, os tooltips e os diálogos e separar os dicionários por idioma. Não adianta usar `zod/mini` só nos esquemas das rotas: toda resposta da API é validada com os contratos em zod completo, então o zod continua no caminho crítico, a menos que todos os contratos, formulários e o mock passem para `zod/mini`.
+Próximos passos, se fosse preciso mais folga: carregar o sonner (toasts) sob demanda, o que exige envolver toda chamada de `toast()`. Não adianta usar `zod/mini` só nos esquemas das rotas: toda resposta da API é validada com os contratos em zod completo, então o zod continua no caminho crítico, a menos que todos os contratos, formulários e o mock passem para `zod/mini`.
 
 ## 13. Decisões de UX e desvios do Figma
 
@@ -195,7 +196,6 @@ O Figma define a identidade visual; o enunciado define o comportamento. Onde os 
 - O backend é simulado no navegador: dados e eventos são locais a cada navegador.
 - Os testes de regressão visual têm baselines só para macOS/Chromium; no CI (Linux) rodam só os testes funcionais.
 - Referências de transação e links do explorador são simulados e apontam para um domínio fictício.
-- No mobile, a Performance da home no Lighthouse fica exatamente na meta de 90, sem folga (veja a seção 12).
 - As baselines visuais de página inteira no mobile mostram a barra de abas fixa no meio da captura: é como o Playwright costura elementos fixos, não um defeito de layout.
 - Login social, "esqueceu a senha" e as seções fora do escopo são apenas visuais (seção 13).
 - Refatorações identificadas e ainda não feitas: o "último clique vence" da quantidade no carrinho poderia usar o mesmo módulo puro e testado dos favoritos (`favorites/sync.ts`); `useLiveRegion` poderia sair de `features/cart` para `src/ui`; carrinho, pagamento e detalhe poderiam compartilhar um cabeçalho de página (breadcrumb e voltar no mobile).

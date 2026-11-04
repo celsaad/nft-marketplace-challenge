@@ -164,24 +164,25 @@ Audited with Lighthouse CI (`pnpm lighthouse`, configs in `lighthouse/`) against
 
 | Profile | Page | Performance | Accessibility | Best Practices | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|---|
-| mobile | Home | 90 | 100 | 100 | 100 | 3.31 s | 0.000 | 5 ms |
-| mobile | NFT detail | 95 | 100 | 100 | 100 | 2.87 s | 0.000 | 1 ms |
+| mobile | Home | 93 | 100 | 100 | 100 | 3.04 s | 0.000 | 8 ms |
+| mobile | NFT detail | 95 | 100 | 100 | 100 | 2.86 s | 0.000 | 0 ms |
 | desktop | Home | 100 | 100 | 100 | 100 | 0.62 s | 0.000 | 0 ms |
-| desktop | NFT detail | 100 | 100 | 100 | 100 | 0.62 s | 0.004 | 0 ms |
+| desktop | NFT detail | 100 | 100 | 100 | 100 | 0.58 s | 0.004 | 0 ms |
 
-**Every target is met on both profiles. The mobile home page has no margin: its median is exactly 90, and the two audits before the static header gave 89 and 88.**
+**Every target is met on both profiles. The mobile home page has the smallest margin, 3 points.**
 
 The previous audit served the build with `vite preview` (HTTP/1.1, uncompressed) and scored 72 and 76 on mobile. The app didn't change between the two audits; the server did. Lighthouse's simulated throttling replays the page's requests over a modelled network. Over HTTP/1.1 it spreads the app's ~27 eager JS files across 6 connections that each fetch one file at a time, and uncompressed bytes all cross the simulated 1.6 Mbps link. Over HTTP/2 with Brotli the same files share one connection and are compressed. Details and measurements: [docs/lighthouse/improvement-research.md](./docs/lighthouse/improvement-research.md).
 
 Why the mobile home page has the smallest margin (Lighthouse's default profile: simulated slow 4G, 4× slower CPU):
 - The LCP element is the first catalog card's image. It only exists once the catalog API answers, and here the API is the simulated backend running in the browser: its chunk (60 KB gzipped) has to download, run and register the service worker before the first request, and the default scenario adds 150–400 ms of simulated latency. In production, with a real API, that chunk and the service worker wouldn't exist.
-- First paint (2.3 s on home, 1.4 s on detail) now needs only the HTML and CSS of the static header, but the app still loads about 250 KB gzipped of JS at startup (React DOM, Zod 4, Axios, TanStack Router/Query, Radix), which competes with the catalog images for the simulated 1.6 Mbps link.
+- First paint (2.0 s on home, 1.2 s on detail) needs only the HTML and CSS of the static header, but the app still loads about 200 KB gzipped of JS at startup (React DOM, Zod 4, Axios, TanStack Router/Query, Radix), which competes with the catalog images for the simulated 1.6 Mbps link.
 - The simulated backend stays in the audited build on purpose: the brief forbids audit-only simplifications (ADR 0005).
 
 What was done, measured before and after:
 - **Simulated backend chunk from 173 KB to 60 KB gzipped:** MSW uses `tldts` (the public-suffix list) only to validate cookie domains; this app uses no cookies (token in a header), so it's swapped for a 10-line stub (`src/mocks/tldts-stub.ts`).
 - **The app renders before the simulated backend is ready:** the HTTP client and the realtime client wait for `backendReady`, so ADR 0001's ordering still holds (no request and no socket.io-client before the worker), but the shell, routes and skeletons show while the mock starts.
 - **One `vendor` chunk** for the libraries every page needs before its first paint (React, TanStack Router and Query, Axios, zod, zustand, tailwind-merge, clsx, cva): 28 startup files became 20. Locally over HTTP/2 + Brotli, mobile home went from 88–93 to 92–95; on the deployment it is within run-to-run noise (89 → 88, detail 90 → 92).
+- **Header menus, the EN dictionary and an unused provider off the startup bundle:** the language and account buttons render at once and the Radix menu code loads on hover, focus or touch (the click opens it; a keyboard open focuses the first item, as Radix does). Only PT-BR ships at startup, and EN loads before it is applied. `TooltipProvider` was mounted but no tooltip existed. Startup JS from 252.6 to 197.7 KB gzipped, 20 to 9 files. On the deployment: mobile home 90 → 93.
 - **Static header in `index.html`:** the header box and the logo (the same for every visitor and locale) paint with the CSS alone, and React replaces them on its first render. On the deployment: mobile home 88 → 90, detail 92 → 95, CLS still 0.
 - **The first row of cards** loads eagerly with high priority (the LCP image).
 - **CLS on the detail page from 0.081 to 0.004:** `<main>` reserves the viewport's height, so the footer doesn't jump when content arrives.
@@ -190,7 +191,7 @@ What was done, measured before and after:
 
 Tried and dropped: deferring the promo and journal images until they are a screen away (Chrome's native lazy loading starts ~1250 px out, so on a phone they load with the catalog): it cut the home page's image bytes at load from 201 KB to 25 KB but did not move the score, and it would hide them from the full-page visual baseline. Also `modulepreload` for the mock chunk (it competes with the app's JS for bandwidth and made LCP worse) and deferring the mock until after the first frame (no effect).
 
-Next steps, ranked in the research note: lazy-load the account menu, tooltips and dialogs, and split the dictionaries per language. Not `zod/mini` in the route schemas alone: every API response is parsed with the full zod contracts, so zod stays on the critical path unless all contracts, forms and the mock move to `zod/mini`.
+Next steps, if more margin were needed: load sonner (toasts) on demand, which takes wrapping every `toast()` call. Not `zod/mini` in the route schemas alone: every API response is parsed with the full zod contracts, so zod stays on the critical path unless all contracts, forms and the mock move to `zod/mini`.
 
 ## 13. UX decisions and deviations from the Figma
 
@@ -239,7 +240,6 @@ The Figma defines the visual identity; the brief defines the behavior. Where the
 - The backend is simulated in the browser: data and events are local to each browser.
 - Visual regression baselines exist for macOS/Chromium only; CI (Linux) runs the functional tests only.
 - Transaction references and explorer links are simulated and point to a fictional domain.
-- On mobile, Lighthouse Performance on the home page sits exactly at the 90 target, with no margin (see section 12).
 - Mobile full-page visual baselines show the fixed tab bar in the middle of the capture: that's how Playwright stitches fixed elements, not a layout defect.
 - Social login, "esqueceu a senha" and the out-of-scope sections are visual only (section 13).
 - Refactors identified but not done: the cart quantity's "last click wins" could use the same pure, tested module as favorites (`favorites/sync.ts`); `useLiveRegion` could move from `features/cart` to `src/ui`; cart, checkout and the detail page could share one page header (breadcrumb and mobile back button).

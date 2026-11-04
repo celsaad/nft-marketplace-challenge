@@ -5,10 +5,10 @@ reports in this folder. Targets: Performance ≥ 90, Accessibility ≥ 95, Best 
 
 | Profile | Page | Performance | Accessibility | Best Practices | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|---|
-| mobile | Home ([HTML](./mobile/home.html), [JSON](./mobile/home.json)) | 90 | 100 | 100 | 100 | 3.31 s | 0.000 | 5 ms |
-| mobile | NFT detail ([HTML](./mobile/nft-detail.html), [JSON](./mobile/nft-detail.json)) | 95 | 100 | 100 | 100 | 2.87 s | 0.000 | 1 ms |
+| mobile | Home ([HTML](./mobile/home.html), [JSON](./mobile/home.json)) | 93 | 100 | 100 | 100 | 3.04 s | 0.000 | 8 ms |
+| mobile | NFT detail ([HTML](./mobile/nft-detail.html), [JSON](./mobile/nft-detail.json)) | 95 | 100 | 100 | 100 | 2.86 s | 0.000 | 0 ms |
 | desktop | Home ([HTML](./desktop/home.html), [JSON](./desktop/home.json)) | 100 | 100 | 100 | 100 | 0.62 s | 0.000 | 0 ms |
-| desktop | NFT detail ([HTML](./desktop/nft-detail.html), [JSON](./desktop/nft-detail.json)) | 100 | 100 | 100 | 100 | 0.62 s | 0.004 | 0 ms |
+| desktop | NFT detail ([HTML](./desktop/nft-detail.html), [JSON](./desktop/nft-detail.json)) | 100 | 100 | 100 | 100 | 0.58 s | 0.004 | 0 ms |
 
 ## Environment
 
@@ -17,4 +17,4 @@ reports in this folder. Targets: Performance ≥ 90, Accessibility ≥ 95, Best 
 - Node v26.13.0; optimized build as deployed at https://nft-marketplace-challenge-one.vercel.app; default mock Scenario
 - mobile: mobile, 412×823 @1.75x; simulate throttling: 150 ms RTT, 1638 Kbps down, CPU 4× slowdown
 - desktop: desktop, 1350×940 @1x; simulate throttling: 40 ms RTT, 10240 Kbps down, CPU 1× slowdown
-- Generated 2026-11-04T16:56:57.503Z
+- Generated 2026-11-04T17:15:08.042Z
