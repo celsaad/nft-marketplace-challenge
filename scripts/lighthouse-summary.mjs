@@ -23,6 +23,7 @@ const prune = []
 
 let lighthouseVersion = 'unknown'
 let chromeVersion = 'unknown'
+let origin = 'unknown'
 const rows = []
 
 for (const profile of PROFILES) {
@@ -36,6 +37,7 @@ for (const profile of PROFILES) {
       `${formFactor}, ${screen.width}×${screen.height} @${screen.deviceScaleFactor}x; ${throttlingMethod} throttling: ` +
       `${t.rttMs} ms RTT, ${Math.round(t.throughputKbps)} Kbps down, CPU ${t.cpuSlowdownMultiplier}× slowdown`
     chromeVersion = report.environment?.hostUserAgent?.match(/Chrome\/[\d.]+/)?.[0] ?? chromeVersion
+    origin = new URL(run.url).origin
     const key = pageName(run.url)
     const list = byPage.get(key) ?? []
     list.push({
@@ -82,7 +84,11 @@ const lines = [
   '',
   `- Lighthouse ${lighthouseVersion}, ${chromeVersion}, via \`@lhci/cli\` (configs in \`lighthouse/\`)`,
   `- ${platform()} ${release()} (${arch()}), ${cpus()[0]?.model ?? 'unknown CPU'}, ${Math.round(totalmem() / 2 ** 30)} GB RAM`,
-  `- Node ${process.version}; optimized build served by \`vite preview\`; default mock Scenario`,
+  `- Node ${process.version}; optimized build ${
+    new URL(origin).hostname === 'localhost'
+      ? `served by \`vite preview\` at ${origin} (HTTP/1.1, uncompressed)`
+      : `as deployed at ${origin}`
+  }; default mock Scenario`,
   ...PROFILES.map((profile) => `- ${profile}: ${conditions[profile]}`),
   `- Generated ${new Date().toISOString()}`,
   '',

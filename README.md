@@ -36,7 +36,8 @@ Não há serviço privado nem backend real: um checkout limpo roda inteiro, incl
 | `pnpm e2e` | Testes E2E (Playwright) em desktop 1440×900 e mobile 390×844, contra o build otimizado |
 | `pnpm e2e:update` | Regenera as baselines de regressão visual |
 | `pnpm e2e:report` | Abre o relatório HTML do último E2E (traces das falhas incluídos) |
-| `pnpm lighthouse` | Auditoria Lighthouse (mobile e desktop, 3 execuções, mediana em `docs/lighthouse/summary.md`) |
+| `pnpm lighthouse` | Auditoria Lighthouse da versão publicada (mobile e desktop, 3 execuções, mediana em `docs/lighthouse/summary.md`). Precisa do Chrome; sem ele, aponte `CHROME_PATH` para o Chromium do Playwright |
+| `pnpm lighthouse:local` | A mesma auditoria contra o `pnpm build` servido pelo `vite preview` em localhost (HTTP/1.1, sem compressão, então o mobile pontua menos) |
 
 Antes do primeiro `pnpm e2e`, instale o navegador: `pnpm exec playwright install chromium`. Para rodar em outra porta: `E2E_PORT=4410 pnpm e2e`.
 

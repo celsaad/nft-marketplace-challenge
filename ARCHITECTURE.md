@@ -141,20 +141,22 @@ Na pasta `src/ui/primitives/` (componentes gerados pelo CLI do shadcn) algumas r
 
 ## 12. Performance
 
-Auditoria com Lighthouse CI (`pnpm lighthouse`, configs em `lighthouse/`): build otimizado, cenário padrão, 3 execuções por página e perfil, mediana. Relatórios e ambiente em [docs/lighthouse/summary.md](./docs/lighthouse/summary.md).
+Auditoria com Lighthouse CI (`pnpm lighthouse`, configs em `lighthouse/`) contra a versão publicada, que serve o mesmo build otimizado do `pnpm build` (hashes dos assets conferidos) por HTTPS, HTTP/2 e Brotli, como os usuários recebem. Cenário padrão, 3 execuções por página e perfil, mediana. Relatórios e ambiente em [docs/lighthouse/summary.md](./docs/lighthouse/summary.md). `pnpm lighthouse:local` audita o `vite preview` em localhost.
 
 | Perfil | Página | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|---|
-| mobile | Home | **72** ⚠️ | 100 | 100 | 100 | 5,21 s | 0,000 | 4 ms |
-| mobile | Detalhe do NFT | **76** ⚠️ | 100 | 100 | 100 | 4,55 s | 0,000 | 0 ms |
-| desktop | Home | 98 | 100 | 100 | 100 | 0,98 s | 0,000 | 0 ms |
-| desktop | Detalhe do NFT | 98 | 100 | 100 | 100 | 0,98 s | 0,004 | 0 ms |
+| mobile | Home | **89** ⚠️ | 100 | 100 | 100 | 3,20 s | 0,000 | 5 ms |
+| mobile | Detalhe do NFT | 90 | 100 | 100 | 100 | 2,93 s | 0,000 | 0 ms |
+| desktop | Home | 100 | 100 | 100 | 100 | 0,62 s | 0,000 | 0 ms |
+| desktop | Detalhe do NFT | 100 | 100 | 100 | 100 | 0,60 s | 0,004 | 0 ms |
 
-**Desktop atinge todas as metas. No mobile, Acessibilidade, Boas práticas e SEO atingem; Performance fica em 72–76, abaixo de 90.**
+**Desktop atinge todas as metas. No mobile, Acessibilidade, Boas práticas e SEO atingem; Performance fica em 90 no detalhe e 89 na home, um ponto abaixo.**
 
-Por que o mobile fica abaixo (perfil padrão do Lighthouse: 4G lento simulado, CPU 4× mais lenta):
+A auditoria anterior servia o build com `vite preview` (HTTP/1.1, sem compressão) e dava 72 e 76 no mobile. O app não mudou entre as duas auditorias; o servidor, sim. O throttling simulado do Lighthouse refaz as requisições da página numa rede modelada. Em HTTP/1.1, ele distribui os ~27 arquivos de JS iniciais em 6 conexões que buscam um arquivo de cada vez, e os bytes sem compressão passam todos pelo link simulado de 1,6 Mbps. Em HTTP/2 com Brotli, os mesmos arquivos dividem uma conexão e vão comprimidos. Detalhes e medições: [docs/lighthouse/improvement-research.md](./docs/lighthouse/improvement-research.md).
+
+Por que a home no mobile ainda fica logo abaixo (perfil padrão do Lighthouse: 4G lento simulado, CPU 4× mais lenta):
 - O elemento de LCP é a imagem do primeiro card do catálogo. Ela só existe depois que a API do catálogo responde, e aqui a API é o backend simulado, que roda no navegador: o chunk dele (60 KB gzip) precisa baixar, executar e registrar o service worker antes da primeira requisição, e o cenário padrão ainda soma 150–400 ms de latência simulada. Em produção, com uma API real, esse chunk e o service worker não existiriam.
-- O primeiro paint (3,7 s) é limitado pelo próprio app: cerca de 200 KB gzip de JS antes do primeiro paint (React DOM, Zod 4, Axios, TanStack Router/Query, Radix), mais CSS e fontes, em um RTT simulado de 150 ms.
+- O primeiro paint (2,7 s) é limitado pelo próprio app: cerca de 200 KB gzip de JS antes do primeiro paint (React DOM, Zod 4, Axios, TanStack Router/Query, Radix), mais CSS e fontes, em um RTT simulado de 150 ms.
 - O backend simulado fica no build auditado de propósito: o enunciado proíbe simplificações só para a auditoria (ADR 0005).
 
 O que foi feito, medido antes e depois:
@@ -167,7 +169,7 @@ O que foi feito, medido antes e depois:
 
 Testado e descartado: `modulepreload` do chunk do mock (compete por banda com o JS do app e piorou o LCP) e adiar o mock para depois do primeiro frame (sem efeito).
 
-Próximos passos, se a meta mobile fosse obrigatória: trocar Zod por `zod/mini` no cliente, carregar sob demanda o menu da conta, os tooltips e os toasts, separar os dicionários por idioma e, com uma API real, pré-renderizar a home.
+Próximos passos, na ordem da nota de pesquisa: juntar o JS inicial em menos arquivos, trocar Zod por `zod/mini` nos esquemas de busca das rotas, carregar sob demanda o menu da conta, os tooltips e os diálogos, separar os dicionários por idioma e colocar o shell estático (link de pular e cabeçalho) no `index.html`.
 
 ## 13. Decisões de UX e desvios do Figma
 
@@ -191,7 +193,7 @@ O Figma define a identidade visual; o enunciado define o comportamento. Onde os 
 - O backend é simulado no navegador: dados e eventos são locais a cada navegador.
 - Os testes de regressão visual têm baselines só para macOS/Chromium; no CI (Linux) rodam só os testes funcionais.
 - Referências de transação e links do explorador são simulados e apontam para um domínio fictício.
-- No mobile, Performance fica abaixo de 90 no Lighthouse (veja a seção 12).
+- No mobile, a Performance da home no Lighthouse fica em 89, um ponto abaixo de 90 (veja a seção 12).
 - As baselines visuais de página inteira no mobile mostram a barra de abas fixa no meio da captura: é como o Playwright costura elementos fixos, não um defeito de layout.
 - Login social, "esqueceu a senha" e as seções fora do escopo são apenas visuais (seção 13).
 - Refatorações identificadas e ainda não feitas: o "último clique vence" da quantidade no carrinho poderia usar o mesmo módulo puro e testado dos favoritos (`favorites/sync.ts`); `useLiveRegion` poderia sair de `features/cart` para `src/ui`; carrinho, pagamento e detalhe poderiam compartilhar um cabeçalho de página (breadcrumb e voltar no mobile).
