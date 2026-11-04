@@ -84,10 +84,18 @@ test.describe('Session lifecycle', () => {
   test('Session Expiry on /perfil sends to login and back to /perfil', async ({ page, mock }) => {
     await open(page, '/')
     await loginAs(page, ANA, 'Ana Souza')
+    // /perfil also loads the Cart (header badge) and the Wallets. Expiring the Session while one
+    // of them is still in flight makes *that* request the one that meets the 401, before Salvar.
+    const backgroundLoads = Promise.all(
+      ['/api/cart', '/api/wallets'].map((path) =>
+        page.waitForResponse((r) => new URL(r.url()).pathname === path),
+      ),
+    )
     await page.goto('/perfil')
     await expect(page.getByRole('textbox', { name: 'Nome de exibição', exact: true })).toHaveValue(
       'Ana Souza',
     )
+    await backgroundLoads
 
     await mock.expireSession()
     await page.getByRole('textbox', { name: 'Nome de exibição', exact: true }).fill('Ana S.')
