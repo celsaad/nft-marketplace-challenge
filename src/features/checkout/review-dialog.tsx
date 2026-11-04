@@ -5,6 +5,7 @@ import { Loader2Icon, PlugIcon, XIcon } from 'lucide-react'
 import type { Wallet } from '@/contracts/account'
 import type { Cart, Quote } from '@/contracts/purchase'
 import { QuoteTotals } from '@/features/cart/quote-totals'
+import { shortAddress } from '@/lib/address'
 import { useT } from '@/lib/i18n'
 import { Button } from '@/ui/primitives/button'
 import {
@@ -19,7 +20,7 @@ import {
 import type { CheckoutAttempt } from './attempt/use-checkout-attempt'
 import { AttemptNotice } from './attempt-notice'
 import { QuotedLines } from './checkout-summary'
-import { type ConnectionStatus, shortAddress } from './wallets'
+import type { ConnectionStatus } from './wallets'
 
 export function ReviewDialog({
   open,

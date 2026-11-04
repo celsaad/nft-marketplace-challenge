@@ -6,14 +6,15 @@ import { toast } from 'sonner'
 import { useSessionStore } from '@/app/session/store'
 import type { Wallet } from '@/contracts/account'
 import { AccountLayout } from '@/features/account/account-layout'
-import { isSessionLoss } from '@/features/auth/form-errors'
+import { shortAddress } from '@/lib/address'
 import { useT } from '@/lib/i18n'
-import { ErrorState, errorMessageKey, LoadingRegion, RefreshingHint, Skeleton } from '@/ui/feedback'
+import { ErrorState, LoadingRegion, RefreshingHint, Skeleton } from '@/ui/feedback'
+import { reportFailure } from '@/ui/form/report-failure'
 import { Badge } from '@/ui/primitives/badge'
 import { Button } from '@/ui/primitives/button'
 import { Checkbox } from '@/ui/primitives/checkbox'
 import { Label } from '@/ui/primitives/label'
-import { networkLabel, providerLabel, shortAddress } from './format'
+import { networkLabel, providerLabel } from './format'
 import { useSaveWallet, useWallets } from './queries'
 import { WalletForm } from './wallet-form'
 
@@ -212,7 +213,7 @@ function SecondaryWallet({
     try {
       await save.mutateAsync({ id, input: { ...input, isPrimary: true } })
     } catch (error) {
-      if (!isSessionLoss(error)) toast.error(t(errorMessageKey(error)))
+      reportFailure(error)
       return
     }
     toast.success(t('account.wallets.primaryChanged', { label: wallet.label }))

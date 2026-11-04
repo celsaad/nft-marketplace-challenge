@@ -9,7 +9,7 @@ import { queryClient } from '@/app/query/client'
 import { keys } from '@/app/query/keys'
 import { getSession, useSessionStore } from '@/app/session/store'
 import { t } from '@/lib/i18n'
-import { errorMessageKey } from '@/ui/feedback'
+import { describeFailure } from '@/ui/failure'
 import { createFavoriteSync, type FavoriteSync } from './sync'
 
 export const favoritesQuery = (collectorId: string) =>
@@ -59,10 +59,9 @@ function syncFor(collectorId: string): FavoriteSync {
       },
       onFailure: (nftId, error, rollbackTo) => {
         setMembership(collectorId, nftId, rollbackTo)
-        toast.error(t('catalog.favorite.failed'), {
-          id: `favorite-${nftId}`,
-          description: t(errorMessageKey(error)),
-        })
+        const failure = describeFailure(error)
+        if (failure.kind !== 'message') return
+        toast.error(t('catalog.favorite.failed'), { id: `favorite-${nftId}`, description: t(failure.key) })
       },
       onPendingChange: (nftId, pending) =>
         usePending.setState((s) => {

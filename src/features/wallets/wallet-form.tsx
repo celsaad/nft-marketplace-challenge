@@ -6,15 +6,13 @@ import { useEffect, useId } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { isApiError } from '@/app/api/errors'
 import { WALLET_PROVIDERS, type Wallet, type WalletInput, WalletInputSchema } from '@/contracts/account'
 import { NETWORKS } from '@/contracts/common'
 import { EnsInput, withEthSuffix, withoutEthSuffix } from '@/features/account/ens-input'
-import { applyFieldErrors, isSessionLoss } from '@/features/auth/form-errors'
-import { SubmitButton } from '@/features/auth/submit-button'
 import { useT } from '@/lib/i18n'
-import { errorMessageKey } from '@/ui/feedback'
-import { FormField } from '@/ui/form-field'
+import { FormField } from '@/ui/form/form-field'
+import { reportFailure } from '@/ui/form/report-failure'
+import { SubmitButton } from '@/ui/form/submit-button'
 import { Button } from '@/ui/primitives/button'
 import { Input } from '@/ui/primitives/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/primitives/select'
@@ -109,10 +107,11 @@ export function WalletForm({
       const input = WalletInputSchema.parse(toInput(values, primary))
       saved = await save.mutateAsync({ id: wallet?.id, input })
     } catch (error) {
-      if (isSessionLoss(error)) return
-      if (!applyFieldErrors(error, form.setError, FIELDS)) {
-        form.setError('root', { message: isApiError(error) ? errorMessageKey(error) : 'error.unknown' })
-      }
+      reportFailure(error, {
+        setError: form.setError,
+        fields: FIELDS,
+        onMessage: (key) => form.setError('root', { message: key }),
+      })
       return
     }
     toast.success(t('account.wallets.saved'))

@@ -12,13 +12,13 @@ import { login } from '@/app/session/session'
 import { getSession } from '@/app/session/store'
 import { type Collector, type LoginInput, LoginInputSchema } from '@/contracts/account'
 import { type MessageKey, useT } from '@/lib/i18n'
-import { errorMessageKey } from '@/ui/feedback'
-import { FormField } from '@/ui/form-field'
+import { errorMessageKey } from '@/ui/failure'
+import { FormField } from '@/ui/form/form-field'
+import { PasswordInput } from '@/ui/form/password-input'
+import { SubmitButton } from '@/ui/form/submit-button'
 import { Input } from '@/ui/primitives/input'
 import { notifyUnavailable } from '@/ui/unavailable'
 import { AuthCard, authInput, authSubmit } from './auth-card'
-import { PasswordInput } from './password-input'
-import { SubmitButton } from './submit-button'
 
 /** The session lifecycle seeds the profile into the cache on login. */
 function signedInName() {

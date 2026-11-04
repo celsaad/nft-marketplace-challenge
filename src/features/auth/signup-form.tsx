@@ -9,13 +9,12 @@ import { z } from 'zod'
 import { signup } from '@/app/session/session'
 import { SignupInputSchema } from '@/contracts/account'
 import { type MessageKey, useT } from '@/lib/i18n'
-import { errorMessageKey } from '@/ui/feedback'
-import { FormField } from '@/ui/form-field'
+import { FormField } from '@/ui/form/form-field'
+import { PasswordInput } from '@/ui/form/password-input'
+import { reportFailure } from '@/ui/form/report-failure'
+import { SubmitButton } from '@/ui/form/submit-button'
 import { Input } from '@/ui/primitives/input'
 import { AuthCard, authInput, authSubmit } from './auth-card'
-import { applyFieldErrors } from './form-errors'
-import { PasswordInput } from './password-input'
-import { SubmitButton } from './submit-button'
 
 const SignupFormSchema = SignupInputSchema.omit({ displayName: true })
   .extend({ confirmPassword: z.string().min(1, 'validation.required') })
@@ -40,9 +39,11 @@ export function SignupForm({ redirect }: { redirect?: string }) {
     try {
       await signup({ username, email, password, displayName: username })
     } catch (error) {
-      if (!applyFieldErrors(error, form.setError, ['username', 'email', 'password'])) {
-        setFormError(errorMessageKey(error))
-      }
+      reportFailure(error, {
+        setError: form.setError,
+        fields: ['username', 'email', 'password'],
+        onMessage: setFormError,
+      })
       return
     }
     toast.success(t('account.auth.created'))

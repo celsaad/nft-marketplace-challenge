@@ -4,7 +4,7 @@
 // fields, and only a confirmed change is shown as saved.
 import { zodResolver } from '@hookform/resolvers/zod'
 import { type FormEvent, useState } from 'react'
-import { type FieldValues, type Path, type UseFormReturn, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { useSessionStore } from '@/app/session/store'
@@ -15,13 +15,13 @@ import {
   UpdateProfileInputSchema,
   type Wallet,
 } from '@/contracts/account'
-import { applyFieldErrors, isSessionLoss } from '@/features/auth/form-errors'
-import { PasswordInput } from '@/features/auth/password-input'
-import { SubmitButton } from '@/features/auth/submit-button'
 import { useSaveWallet, useWallets } from '@/features/wallets/queries'
 import { useT } from '@/lib/i18n'
-import { ErrorState, errorMessageKey, LoadingRegion, Skeleton } from '@/ui/feedback'
-import { FormField } from '@/ui/form-field'
+import { ErrorState, LoadingRegion, Skeleton } from '@/ui/feedback'
+import { FormField } from '@/ui/form/form-field'
+import { PasswordInput } from '@/ui/form/password-input'
+import { reportFailure } from '@/ui/form/report-failure'
+import { SubmitButton } from '@/ui/form/submit-button'
 import { Input } from '@/ui/primitives/input'
 import { AccountLayout } from './account-layout'
 import { AvatarField } from './avatar-field'
@@ -113,10 +113,6 @@ function ProfileForms({ me, primary }: { me: Collector; primary: Wallet | undefi
   const we = passwords.formState.errors
 
   /** Field errors go on their fields; anything else is a toast. Session loss is the guard's job. */
-  function reportFailure<T extends FieldValues>(error: unknown, form: UseFormReturn<T>, fields: Path<T>[]) {
-    if (isSessionLoss(error)) return
-    if (!applyFieldErrors(error, form.setError, fields)) toast.error(t(errorMessageKey(error)))
-  }
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault()
@@ -150,7 +146,10 @@ function ProfileForms({ me, primary }: { me: Collector; primary: Wallet | undefi
           profile.reset(toForm(saved, wallet))
           toast.success(t('account.profile.saved'))
         } catch (error) {
-          reportFailure(error, profile, ['displayName', 'username', 'email', 'ensName', 'walletLabel'])
+          reportFailure(error, {
+            setError: profile.setError,
+            fields: ['displayName', 'username', 'email', 'ensName', 'walletLabel'],
+          })
           return
         }
       }
@@ -161,7 +160,7 @@ function ProfileForms({ me, primary }: { me: Collector; primary: Wallet | undefi
           passwords.reset(EMPTY_PASSWORD)
           toast.success(t('account.profile.passwordSaved'))
         } catch (error) {
-          reportFailure(error, passwords, ['currentPassword', 'newPassword'])
+          reportFailure(error, { setError: passwords.setError, fields: ['currentPassword', 'newPassword'] })
         }
       }
     } finally {

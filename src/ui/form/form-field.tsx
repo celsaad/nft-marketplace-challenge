@@ -2,8 +2,8 @@
 // screen readers announce the error with the field (spec §Interface, accessibility).
 import { cloneElement, type ReactElement, useId } from 'react'
 import { useT } from '@/lib/i18n'
-import { cn } from './lib/utils'
-import { Label } from './primitives/label'
+import { cn } from '../lib/utils'
+import { Label } from '../primitives/label'
 
 interface ControlProps {
   id?: string

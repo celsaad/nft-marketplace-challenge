@@ -3,11 +3,9 @@
 import { ImageIcon, LoaderCircleIcon } from 'lucide-react'
 import { type ChangeEvent, useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { isApiError } from '@/app/api/errors'
 import type { Collector } from '@/contracts/account'
-import { isSessionLoss } from '@/features/auth/form-errors'
 import { useT } from '@/lib/i18n'
-import { errorMessageKey } from '@/ui/feedback'
+import { describeFailure } from '@/ui/failure'
 import { Avatar, AvatarFallback, AvatarImage } from '@/ui/primitives/avatar'
 import { Button } from '@/ui/primitives/button'
 import { notifyUnavailable } from '@/ui/unavailable'
@@ -46,8 +44,9 @@ export function AvatarField({ me }: { me: Collector }) {
         },
         onError: (failure) => {
           setPreview(null)
-          if (isSessionLoss(failure)) return
-          setError((isApiError(failure) && failure.fieldErrors.dataUrl) || errorMessageKey(failure))
+          const described = describeFailure(failure, ['dataUrl'])
+          if (described.kind === 'fields') setError(described.errors[0]?.[1] ?? 'error.unknown')
+          else if (described.kind === 'message') setError(described.key)
         },
       },
     )

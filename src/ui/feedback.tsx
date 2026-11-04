@@ -2,8 +2,8 @@
 // and a quiet "refreshing" hint for background refetches.
 import { RefreshCwIcon, TriangleAlertIcon } from 'lucide-react'
 import type { ComponentProps, ReactNode } from 'react'
-import { type ApiError, isApiError } from '@/app/api/errors'
-import { type MessageKey, useT } from '@/lib/i18n'
+import { useT } from '@/lib/i18n'
+import { errorMessageKey } from './failure'
 import { cn } from './lib/utils'
 import { Button } from './primitives/button'
 
@@ -22,19 +22,6 @@ export function LoadingRegion({ children, className }: { children: ReactNode; cl
       {children}
     </div>
   )
-}
-
-const MESSAGE_BY_KIND: Partial<Record<ApiError['kind'], MessageKey>> = {
-  network: 'error.network',
-  timeout: 'error.timeout',
-  transient: 'error.transient',
-  forbidden: 'error.forbidden',
-  notFound: 'error.notFound',
-}
-
-/** The message key for any error, so every screen words failures the same way. */
-export function errorMessageKey(error: unknown): MessageKey {
-  return (isApiError(error) && MESSAGE_BY_KIND[error.kind]) || 'error.unknown'
 }
 
 export function ErrorState({

@@ -189,3 +189,4 @@ O Figma define a identidade visual; o enunciado define o comportamento. Onde os 
 - No mobile, Performance fica abaixo de 90 no Lighthouse (veja a seção 12).
 - As baselines visuais de página inteira no mobile mostram a barra de abas fixa no meio da captura: é como o Playwright costura elementos fixos, não um defeito de layout.
 - Login social, "esqueceu a senha" e as seções fora do escopo são apenas visuais (seção 13).
+- Refatorações identificadas e ainda não feitas: o "último clique vence" da quantidade no carrinho poderia usar o mesmo módulo puro e testado dos favoritos (`favorites/sync.ts`); `useLiveRegion` poderia sair de `features/cart` para `src/ui`; carrinho, pagamento e detalhe poderiam compartilhar um cabeçalho de página (breadcrumb e voltar no mobile).

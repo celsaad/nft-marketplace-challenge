@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { shortAddress } from './format'
+import { shortAddress } from './address'
 
 describe('shortAddress', () => {
   it('keeps the start and the last four characters of a long address', () => {

@@ -233,3 +233,4 @@ The Figma defines the visual identity; the brief defines the behavior. Where the
 - On mobile, Lighthouse Performance is below 90 (see section 12).
 - Mobile full-page visual baselines show the fixed tab bar in the middle of the capture: that's how Playwright stitches fixed elements, not a layout defect.
 - Social login, "esqueceu a senha" and the out-of-scope sections are visual only (section 13).
+- Refactors identified but not done: the cart quantity's "last click wins" could use the same pure, tested module as favorites (`favorites/sync.ts`); `useLiveRegion` could move from `features/cart` to `src/ui`; cart, checkout and the detail page could share one page header (breadcrumb and mobile back button).

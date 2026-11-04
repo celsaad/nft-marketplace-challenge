@@ -15,9 +15,6 @@ export function walletFor(wallets: readonly Wallet[], network: Network): Wallet 
   return onNetwork.find((w) => w.isPrimary) ?? onNetwork[0] ?? null
 }
 
-export const shortAddress = (address: string) =>
-  address.length > 14 ? `${address.slice(0, 6)}…${address.slice(-4)}` : address
-
 export type ConnectionStatus = 'idle' | 'connecting' | 'approved' | 'rejected' | 'error'
 
 export function useWalletConnection(initialConnectedId: string | null) {

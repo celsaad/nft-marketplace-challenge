@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { StarIcon } from 'lucide-react'
 import type { NftDetail } from '@/contracts/catalog'
+import { shortAddress } from '@/lib/address'
 import { useLocale, useT } from '@/lib/i18n'
 import { EmptyState, ErrorState, LoadingRegion, Skeleton } from '@/ui/feedback'
 import { cn } from '@/ui/lib/utils'
@@ -10,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/primitives/tabs'
 import { editionLabel } from './editions'
 import { reviewsQuery } from './queries'
 
-export const shortAddress = (address: string) => `${address.slice(0, 6)}...${address.slice(-4)}`
 export const royalties = (bps: number) => `${bps / 100}%`
 
 export function Stars({ value, className }: { value: number; className?: string }) {

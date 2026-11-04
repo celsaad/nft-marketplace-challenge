@@ -6,14 +6,8 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import type { CartLine } from '@/contracts/purchase'
 import { useT } from '@/lib/i18n'
-import {
-  EmptyState,
-  ErrorState,
-  errorMessageKey,
-  LoadingRegion,
-  RefreshingHint,
-  Skeleton,
-} from '@/ui/feedback'
+import { EmptyState, ErrorState, LoadingRegion, RefreshingHint, Skeleton } from '@/ui/feedback'
+import { reportFailure } from '@/ui/form/report-failure'
 import { CartLineRow } from './cart-line'
 import { COUPON_INPUT_ID, CouponForm } from './coupon-form'
 import { useLineNames } from './line-names'
@@ -47,10 +41,13 @@ export function CartPage() {
         say(text)
         toast.success(text)
       },
-      onError: (e) => {
-        say(t(errorMessageKey(e)))
-        toast.error(t(errorMessageKey(e)))
-      },
+      onError: (e) =>
+        reportFailure(e, {
+          onMessage: (key) => {
+            say(t(key))
+            toast.error(t(key))
+          },
+        }),
       onSettled: () => setRemovingId(null),
     })
   }

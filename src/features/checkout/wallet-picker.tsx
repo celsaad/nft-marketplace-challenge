@@ -3,11 +3,12 @@
 import { Link } from '@tanstack/react-router'
 import { CheckCircle2Icon, Loader2Icon, PlugIcon, UnplugIcon } from 'lucide-react'
 import type { Wallet } from '@/contracts/account'
+import { shortAddress } from '@/lib/address'
 import { useT } from '@/lib/i18n'
 import { cn } from '@/ui/lib/utils'
 import { Button } from '@/ui/primitives/button'
 import { RadioGroup, RadioGroupItem } from '@/ui/primitives/radio-group'
-import { type ConnectionStatus, shortAddress } from './wallets'
+import type { ConnectionStatus } from './wallets'
 
 export function WalletPicker({
   wallets,

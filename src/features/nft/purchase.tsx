@@ -14,7 +14,7 @@ import { useAddToCart } from '@/features/cart/mutations'
 import { FavoriteButton } from '@/features/favorites/favorite-button'
 import { useT } from '@/lib/i18n'
 import { EthAmount } from '@/ui/eth'
-import { errorMessageKey } from '@/ui/feedback'
+import { errorMessageKey } from '@/ui/failure'
 import { cn } from '@/ui/lib/utils'
 import { Button } from '@/ui/primitives/button'
 import {
