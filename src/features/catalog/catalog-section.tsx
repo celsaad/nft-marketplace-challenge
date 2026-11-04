@@ -19,7 +19,7 @@ function SortSelect() {
   const t = useT()
   const { search, setFilters } = useCatalogSearch()
   return (
-    <div className="flex items-center gap-1 text-xs md:text-[0.8125rem]">
+    <div className="flex items-center gap-1 text-xs md:text-[15px]">
       <span id="catalog-sort-label" className="text-foreground">
         {t('catalog.sort.label')}
       </span>
@@ -29,7 +29,7 @@ function SortSelect() {
       >
         <SelectTrigger
           aria-labelledby="catalog-sort-label catalog-sort-value"
-          className="h-8 border-none bg-transparent px-1 text-xs text-foreground shadow-none md:text-[0.8125rem] dark:bg-transparent dark:hover:bg-surface-raised [&_svg:not([class*='text-'])]:text-foreground"
+          className="h-8 border-none bg-transparent px-1 text-xs text-foreground shadow-none md:text-[15px] dark:bg-transparent dark:hover:bg-surface-raised [&_svg:not([class*='text-'])]:text-foreground"
         >
           <span id="catalog-sort-value">
             <SelectValue />
@@ -48,7 +48,7 @@ function SortSelect() {
 }
 
 const tabTrigger =
-  'h-auto flex-none rounded-none border-none px-0 pb-1.5 text-sm text-foreground shadow-none hover:text-primary-hover data-[state=active]:font-bold data-[state=active]:text-primary md:text-[0.8125rem] dark:text-foreground dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-primary after:bottom-0! after:bg-primary'
+  'h-auto flex-none rounded-none border-none px-0 pb-1.5 text-sm font-medium text-foreground shadow-none hover:text-primary-hover data-[state=active]:text-highlight md:text-[15px] dark:text-foreground dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-highlight after:bottom-0! after:bg-primary'
 
 function CatalogTabs() {
   const t = useT()
@@ -93,10 +93,10 @@ export function CatalogSection() {
       <section
         id="mercado"
         aria-labelledby="mercado-title"
-        className="mx-auto w-full max-w-[1200px] scroll-mt-4 px-4 md:px-6"
+        className="mx-auto w-full max-w-[1248px] scroll-mt-4 px-4 md:px-6"
       >
         <div className="mb-6 flex items-center justify-between gap-4">
-          <h1 id="mercado-title" className="text-lg font-bold text-primary">
+          <h1 id="mercado-title" className="text-lg font-bold text-highlight">
             {t('catalog.favorites.title')}
           </h1>
           <Link to="/" className="text-sm text-muted-foreground underline-offset-4 hover:underline">
@@ -112,7 +112,7 @@ export function CatalogSection() {
     <section
       id="mercado"
       aria-labelledby="mercado-title"
-      className="mx-auto w-full max-w-[1200px] scroll-mt-4 px-4 md:px-6"
+      className="mx-auto w-full max-w-[1248px] scroll-mt-4 px-4 md:px-6"
     >
       <h2 id="mercado-title" className="sr-only">
         {t('catalog.section.title')}

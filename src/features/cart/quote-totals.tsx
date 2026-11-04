@@ -21,7 +21,9 @@ export function QuoteTotals({
   if (!quote) return <QuoteTotalsSkeleton className={className} />
   const row = cn(
     'flex items-baseline justify-between gap-4',
-    size === 'large' ? 'text-lg md:text-[15px]' : 'text-[15px]',
+    size === 'large' ? 'text-lg' : 'text-[15px]',
+    // Desktop (Figma): labels 15 px, amounts 18 px.
+    'md:text-[15px] md:[&>dd]:text-lg',
   )
   return (
     <dl className={cn('flex flex-col gap-3', className)} data-testid="quote-totals">
@@ -48,16 +50,17 @@ export function QuoteTotals({
             <EthAmount value={quote.networkFee} />
           </dd>
         </div>
-        <p className="self-end text-xs text-primary">{t('purchase.summary.estimated')}</p>
+        <p className="self-end text-xs text-highlight">{t('purchase.summary.estimated')}</p>
       </div>
       <div
         className={cn(
           'flex items-baseline justify-between gap-4 font-bold',
           size === 'large' ? 'text-2xl md:text-base' : 'text-base',
+          'md:[&>dd]:text-lg',
         )}
       >
         <dt>{t('purchase.summary.total')}</dt>
-        <dd className="text-primary" data-testid="quote-total">
+        <dd className="text-highlight" data-testid="quote-total">
           <EthAmount value={quote.total} />
         </dd>
       </div>

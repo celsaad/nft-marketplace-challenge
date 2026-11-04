@@ -74,7 +74,7 @@ export function ReviewDialog({
         </DialogHeader>
         <DialogClose
           disabled={submitting}
-          className="absolute top-4 right-4 grid size-8 place-items-center rounded-full text-primary hover:bg-surface-raised disabled:opacity-50"
+          className="absolute top-4 right-4 grid size-8 place-items-center rounded-full text-highlight hover:bg-surface-raised disabled:opacity-50"
           aria-label={t('purchase.review.close')}
         >
           <XIcon aria-hidden className="size-4" />
@@ -107,7 +107,7 @@ export function ReviewDialog({
             <Button
               type="button"
               variant="outline"
-              className="self-start border-primary text-primary"
+              className="self-start border-primary text-highlight"
               onClick={onConnect}
               disabled={connection === 'connecting'}
             >

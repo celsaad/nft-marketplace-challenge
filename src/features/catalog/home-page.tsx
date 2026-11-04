@@ -12,7 +12,7 @@ export function HomePage() {
     <div className="flex flex-col gap-8 pt-4 pb-28 md:gap-16 md:pt-6 md:pb-20">
       {!search.favorites && (
         <>
-          <MobileCatalogBar className="mx-auto w-full max-w-[1200px] px-4 md:px-6 lg:hidden" />
+          <MobileCatalogBar className="mx-auto w-full max-w-[1248px] px-4 md:px-6 lg:hidden" />
           <Hero />
         </>
       )}

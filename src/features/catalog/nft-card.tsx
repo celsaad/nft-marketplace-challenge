@@ -17,10 +17,13 @@ export const CARD_IMAGE_SIZES = '(min-width: 1024px) 260px, (min-width: 768px) 3
 export function NftCard({
   nft,
   priority = false,
+  variant = 'grid',
   className,
 }: {
   nft: NftSummary
   priority?: boolean
+  /** The detail page's carousel draws the name and price a size smaller than the catalog grid. */
+  variant?: 'grid' | 'carousel'
   className?: string
 }) {
   const t = useT()
@@ -57,7 +60,7 @@ export function NftCard({
         />
       </div>
       <div className="flex flex-col gap-0.5 px-2 pt-2 md:px-0 md:pt-3">
-        <h3 className="truncate text-sm md:text-[0.8125rem]">
+        <h3 className={cn('truncate text-sm', variant === 'grid' ? 'md:text-base' : 'md:text-[15px]')}>
           <Link
             to="/nft/$nftId"
             params={{ nftId: nft.id }}
@@ -66,7 +69,12 @@ export function NftCard({
             {nft.name}
           </Link>
         </h3>
-        <p className="flex flex-wrap items-baseline gap-x-2 text-sm font-bold text-primary md:text-[0.8125rem]">
+        <p
+          className={cn(
+            'flex flex-wrap items-baseline gap-x-2 text-sm font-bold text-highlight',
+            variant === 'grid' ? 'md:text-lg' : 'md:text-base',
+          )}
+        >
           <span className="sr-only">{t('catalog.card.price')}: </span>
           <EthAmount value={nft.price} />
           {dropped && nft.previousPrice && (

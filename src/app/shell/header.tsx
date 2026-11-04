@@ -9,9 +9,10 @@ import { Button } from '@/ui/primitives/button'
 import { AccountMenu, DeferredMenu } from './deferred-menu'
 import { LocaleSwitch } from './locale-switch'
 
-const navLink = 'relative py-2 text-sm text-foreground transition-colors hover:text-primary-hover'
+const navLink =
+  'relative py-2 text-sm text-foreground md:text-base transition-colors hover:text-primary-hover'
 const navActive =
-  'font-bold text-primary after:absolute after:inset-x-0 after:-bottom-2 after:h-0.5 after:bg-primary'
+  'font-bold text-highlight after:absolute after:inset-x-0 after:-bottom-2 after:h-0.5 after:bg-primary'
 
 /** The Figma marks "Mercado" on the market and everything bought from it (detail, cart, checkout, order). */
 const MARKET_PATHS = /^\/(nft|carrinho|pagamento|pedidos)(\/|$)/
@@ -24,7 +25,7 @@ export function Header() {
 
   return (
     <header className="border-b border-border/60">
-      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-4 md:px-6">
+      <div className="mx-auto flex h-16 max-w-[1248px] items-center justify-between gap-4 px-4 md:px-6">
         <Link
           to="/"
           className="text-sm font-bold tracking-[0.2em]"
@@ -94,14 +95,18 @@ export function Header() {
             <DeferredMenu
               menu={AccountMenu}
               trigger={
-                <Button variant="outline" size="sm" className="border-primary text-primary">
+                <Button variant="outline" size="sm" className="border-primary text-highlight">
                   <UserIcon aria-hidden />
                   <span className="max-w-28 truncate">{me.displayName}</span>
                 </Button>
               }
             />
           ) : (
-            <Button asChild size="sm" className="bg-primary text-primary-foreground hover:bg-primary-hover">
+            <Button
+              asChild
+              size="sm"
+              className="bg-primary md:text-base text-primary-foreground hover:bg-primary-hover"
+            >
               <Link to="/entrar">
                 <LogInIcon aria-hidden />
                 {t('header.login')}

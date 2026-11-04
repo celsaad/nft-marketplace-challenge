@@ -16,6 +16,8 @@
   --band: #38220f;
   --primary: #d28a4c;
   --primary-hover: #e89b55;
+  /* Accent text (prices, active links, section titles): the Figma draws text in the lighter orange. */
+  --highlight: #e89b55;
   --primary-foreground: #140d0a;
   --secondary: #2f1d15;
   --secondary-foreground: #f5f1eb;
@@ -46,6 +48,7 @@
   --color-band: var(--band);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
+  --color-highlight: var(--highlight);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);

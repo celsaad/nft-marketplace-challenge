@@ -48,7 +48,7 @@ function NotFound() {
   const t = useT()
   return (
     <section className="mx-auto flex max-w-xl flex-col items-center gap-4 px-4 py-24 text-center">
-      <p aria-hidden className="text-5xl font-bold text-primary">
+      <p aria-hidden className="text-5xl font-bold text-highlight">
         404
       </p>
       <h1 className="text-2xl font-bold">{t('notFound.title')}</h1>

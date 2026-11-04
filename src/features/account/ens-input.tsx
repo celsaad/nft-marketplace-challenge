@@ -10,7 +10,7 @@ export function EnsInput(props: ComponentProps<'input'>) {
     <div className="flex gap-2.5">
       <span
         aria-hidden
-        className="grid h-10 w-[78px] shrink-0 place-items-center rounded-md border border-input text-sm"
+        className="grid h-10 w-[78px] shrink-0 place-items-center rounded-md border border-input text-sm md:text-[15px]"
       >
         {t('account.profile.ensSuffix')}
       </span>

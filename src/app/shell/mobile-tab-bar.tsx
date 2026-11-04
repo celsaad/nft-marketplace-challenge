@@ -6,7 +6,7 @@ import { useT } from '@/lib/i18n'
 import { notifyUnavailable } from '@/ui/unavailable'
 
 const tab =
-  'flex size-12 items-center justify-center rounded-full text-muted-foreground data-[status=active]:text-primary'
+  'flex size-12 items-center justify-center rounded-full text-muted-foreground data-[status=active]:text-highlight'
 
 export function MobileTabBar() {
   const t = useT()

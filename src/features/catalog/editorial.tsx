@@ -13,7 +13,7 @@ const POSTS = ['figma/ivory-ape', 'figma/emerald-ape', 'figma/sage-gorilla', 'fi
 export function PromoCards() {
   const t = useT()
   return (
-    <section className="mx-auto grid w-full max-w-[1200px] gap-6 px-4 md:grid-cols-2 md:gap-8 md:px-6">
+    <section className="mx-auto grid w-full max-w-[1248px] gap-6 px-4 md:grid-cols-2 md:gap-8 md:px-6">
       {PROMOS.map((image, i) => {
         const title = `promo-${i}-title`
         return (
@@ -24,10 +24,10 @@ export function PromoCards() {
           >
             <NftImage image={image} alt="" sizes="(min-width: 768px) 290px, 45vw" className="rounded-none" />
             <div className="flex flex-col items-end gap-2 p-3 text-right md:gap-3 md:p-4">
-              <h2 id={title} className="text-sm font-bold md:text-base">
+              <h2 id={title} className="text-sm font-bold md:text-lg">
                 {t(`catalog.promo.${i}.title` as MessageKey)}
               </h2>
-              <p className="text-xs leading-relaxed text-muted-foreground">
+              <p className="text-xs leading-relaxed text-muted-foreground md:text-sm">
                 {t(`catalog.promo.${i}.body` as MessageKey)}
               </p>
               <UnavailableLink
@@ -48,12 +48,12 @@ export function PromoCards() {
 export function MintJournal() {
   const t = useT()
   return (
-    <section aria-labelledby="journal-title" className="mx-auto w-full max-w-[1200px] px-4 md:px-6">
+    <section aria-labelledby="journal-title" className="mx-auto w-full max-w-[1248px] px-4 md:px-6">
       <header className="mb-8 flex flex-col items-center gap-3 text-center">
-        <h2 id="journal-title" className="text-xl font-bold md:text-2xl">
+        <h2 id="journal-title" className="text-xl font-bold md:text-[28px]">
           {t('catalog.journal.title')}
         </h2>
-        <p className="text-xs text-muted-foreground">{t('catalog.journal.body')}</p>
+        <p className="text-xs text-muted-foreground md:text-sm">{t('catalog.journal.body')}</p>
       </header>
       <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {POSTS.map((image, i) => {
@@ -72,9 +72,9 @@ export function MintJournal() {
                 <p className="text-[0.6875rem] text-muted-foreground">
                   {k('date')} <span aria-hidden>|</span> {k('read')}
                 </p>
-                <h3 className="text-sm font-bold">{k('title')}</h3>
-                <p className="text-xs text-muted-foreground">{k('body')}</p>
-                <UnavailableLink className="mt-auto inline-flex items-center gap-1 text-xs font-bold text-primary after:absolute after:inset-0">
+                <h3 className="text-sm font-bold md:text-base">{k('title')}</h3>
+                <p className="text-xs font-medium text-muted-foreground">{k('body')}</p>
+                <UnavailableLink className="mt-auto inline-flex items-center gap-1 text-xs font-bold text-highlight after:absolute after:inset-0">
                   {t('catalog.journal.readMore')}
                   <span className="sr-only">: {k('title')}</span>
                   <ArrowRightIcon aria-hidden className="size-3" />

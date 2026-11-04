@@ -13,7 +13,7 @@ import { notifyUnavailable } from '@/ui/unavailable'
 
 type Mode = 'login' | 'signup'
 
-const tab = 'rounded-sm px-1 transition-colors hover:text-primary-hover aria-[current=page]:text-primary'
+const tab = 'rounded-sm px-1 transition-colors hover:text-primary-hover aria-[current=page]:text-highlight'
 
 export function AuthCard({
   mode,
@@ -53,7 +53,7 @@ export function AuthCard({
             type="button"
             onClick={() => router.history.push(redirect ?? '/')}
             aria-label={t('account.auth.close')}
-            className="absolute top-3 right-3 hidden size-8 place-items-center rounded-sm text-primary hover:text-primary-hover md:grid"
+            className="absolute top-3 right-3 hidden size-8 place-items-center rounded-sm text-highlight hover:text-primary-hover md:grid"
           >
             <XIcon aria-hidden className="size-5" />
           </button>
@@ -89,7 +89,7 @@ export function AuthCard({
             </Link>
           </nav>
 
-          <p className="mx-auto mt-10 hidden max-w-[400px] text-center text-xs leading-4 tracking-wide md:block">
+          <p className="mx-auto mt-10 hidden max-w-[400px] text-center text-xs leading-4 tracking-wide md:block md:text-[13px]">
             {intro}
           </p>
 
@@ -111,12 +111,12 @@ export function AuthCard({
 function SocialLogin() {
   const t = useT()
   const social =
-    'flex h-12 w-full items-center justify-center gap-3 rounded-md border border-border text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-foreground md:h-10 md:text-xs'
+    'flex h-12 w-full items-center justify-center gap-3 rounded-md border border-border text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-foreground md:h-10 md:text-[13px]'
   return (
     <div className="mt-8 md:mt-6">
       <div className="flex items-center gap-5 md:gap-3">
         <span aria-hidden className="h-px flex-1 bg-border" />
-        <p className="text-sm md:text-xs">{t('account.auth.orContinueWith')}</p>
+        <p className="text-sm md:text-[13px]">{t('account.auth.orContinueWith')}</p>
         <span aria-hidden className="h-px flex-1 bg-border" />
       </div>
       <div className="mx-auto mt-4 flex max-w-[340px] flex-col gap-3">

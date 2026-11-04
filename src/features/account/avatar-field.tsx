@@ -55,11 +55,13 @@ export function AvatarField({ me }: { me: Collector }) {
   const src = preview ?? me.avatarUrl
   return (
     <fieldset className="flex min-w-0 flex-col gap-1.5">
-      <legend className="mb-1.5 text-sm font-medium">{t('account.profile.avatar')}</legend>
+      <legend className="mb-1.5 text-sm font-medium md:text-[15px] md:font-normal">
+        {t('account.profile.avatar')}
+      </legend>
       <div className="flex flex-wrap items-center gap-6">
         <Avatar className="size-[50px] border border-border bg-surface-raised">
           {src && <AvatarImage src={src} alt={t('account.profile.avatarAlt', { name: me.displayName })} />}
-          <AvatarFallback className="bg-surface-raised text-primary">
+          <AvatarFallback className="bg-surface-raised text-highlight">
             <ImageIcon aria-hidden className="size-5" />
           </AvatarFallback>
         </Avatar>
@@ -89,7 +91,7 @@ export function AvatarField({ me }: { me: Collector }) {
           type="button"
           onClick={() => notifyUnavailable()}
           aria-label={t('account.profile.avatarRemoveLabel')}
-          className="rounded-sm text-sm hover:text-primary"
+          className="rounded-sm text-sm hover:text-highlight"
         >
           {t('account.profile.avatarRemove')}
         </button>

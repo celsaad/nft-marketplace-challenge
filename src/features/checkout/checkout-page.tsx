@@ -83,7 +83,7 @@ function CheckoutGate({ collectorId }: { collectorId: string }) {
     return (
       <Shell>
         <EmptyState title={t('purchase.checkout.emptyCart')}>
-          <Link to="/" hash="mercado" className="font-bold text-primary hover:text-primary-hover">
+          <Link to="/" hash="mercado" className="font-bold text-highlight hover:text-primary-hover">
             {t('purchase.cart.explore')}
           </Link>
         </EmptyState>
@@ -96,12 +96,12 @@ function CheckoutGate({ collectorId }: { collectorId: string }) {
 function Shell({ children }: { children: React.ReactNode }) {
   const t = useT()
   return (
-    <section className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 pt-6 pb-28 md:gap-8 md:px-6 md:pt-8 md:pb-16">
+    <section className="mx-auto flex max-w-[1248px] flex-col gap-6 px-4 pt-6 pb-28 md:gap-8 md:px-6 md:pt-8 md:pb-16">
       <div className="relative flex items-center justify-center md:sr-only">
         <Link
           to="/carrinho"
           aria-label={t('purchase.back')}
-          className="absolute left-0 grid size-12 place-items-center rounded-full bg-surface-raised text-primary md:hidden"
+          className="absolute left-0 grid size-12 place-items-center rounded-full bg-surface-raised text-highlight md:hidden"
         >
           <ChevronLeftIcon aria-hidden />
         </Link>
@@ -319,7 +319,7 @@ function CheckoutForm({
             ref={submitRef}
             type="submit"
             disabled={submitting}
-            className="h-16 rounded-full bg-gradient-to-r from-primary to-[#b97c48] text-lg font-bold text-primary-foreground hover:from-primary-hover md:h-11 md:rounded-md md:bg-primary md:bg-none md:text-sm"
+            className="h-16 rounded-full bg-gradient-to-r from-primary to-[#b97c48] text-lg font-bold text-primary-foreground hover:from-primary-hover md:h-11 md:rounded-md md:bg-primary md:bg-none md:text-[15px]"
           >
             {t('purchase.checkout.confirm')}
           </Button>

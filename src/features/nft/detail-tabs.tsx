@@ -21,7 +21,7 @@ export function Stars({ value, className }: { value: number; className?: string 
         <StarIcon
           // biome-ignore lint/suspicious/noArrayIndexKey: five fixed positions
           key={i}
-          className={cn('size-3.5', i < full ? 'fill-primary text-primary' : 'text-subtle-foreground')}
+          className={cn('size-3.5', i < full ? 'fill-primary text-highlight' : 'text-subtle-foreground')}
         />
       ))}
     </span>
@@ -42,7 +42,7 @@ function Details({ nft }: { nft: NftDetail }) {
     address: shortAddress(nft.contractAddress),
   }
   return (
-    <div className="flex flex-col gap-5 text-xs leading-relaxed text-muted-foreground md:text-[0.8125rem] md:leading-[1.65]">
+    <div className="flex flex-col gap-5 text-xs leading-relaxed text-muted-foreground md:text-sm md:leading-[1.65]">
       <p>{t('catalog.nft.details.0', params)}</p>
       <p>{t('catalog.nft.details.1', params)}</p>
       <dl className="flex flex-col gap-3">
@@ -112,7 +112,7 @@ function Reviews({ nftId }: { nftId: string }) {
 }
 
 const trigger =
-  'h-auto flex-none rounded-none border-none px-0 pb-2 text-sm font-normal text-foreground shadow-none hover:text-primary-hover data-[state=active]:font-bold data-[state=active]:text-primary md:text-base dark:text-foreground dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-primary after:bottom-0! after:h-[3px]! after:bg-primary'
+  'h-auto flex-none rounded-none border-none px-0 pb-2 text-sm font-normal text-foreground shadow-none hover:text-primary-hover data-[state=active]:font-bold data-[state=active]:text-highlight md:text-[17px] dark:text-foreground dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-highlight after:bottom-0! after:h-[3px]! after:bg-primary'
 
 export function DetailTabs({ nft }: { nft: NftDetail }) {
   const t = useT()

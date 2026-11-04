@@ -68,7 +68,7 @@ export function CartLineRow({
         <Link
           to="/nft/$nftId"
           params={{ nftId: line.nftId }}
-          className="truncate text-base font-bold hover:text-primary-hover md:text-[15px]"
+          className="truncate text-base font-bold hover:text-primary-hover"
         >
           {name}
         </Link>
@@ -86,13 +86,13 @@ export function CartLineRow({
             })}
           </span>
         </p>
-        <p className="text-lg font-bold text-primary md:hidden">
+        <p className="text-lg font-bold text-highlight md:hidden">
           <span className="sr-only">{t('purchase.cart.unitPrice')}: </span>
           <EthAmount value={line.unitPrice} />
         </p>
       </div>
 
-      <p className="hidden text-[15px] text-muted-foreground md:block">
+      <p className="hidden text-base font-bold text-muted-foreground md:block">
         <span className="sr-only">{t('purchase.cart.unitPrice')}: </span>
         <EthAmount value={line.unitPrice} />
       </p>
@@ -108,7 +108,7 @@ export function CartLineRow({
         />
       </div>
 
-      <p className="hidden text-[15px] font-bold text-primary md:block" data-testid="line-total">
+      <p className="hidden text-base font-bold text-highlight md:block" data-testid="line-total">
         <span className="sr-only">{t('purchase.cart.lineTotal')}: </span>
         {/* Between Quotes the line total follows the stepper at once (ADR 0006: display only). */}
         <EthAmount value={times(line.unitPrice, quantity)} />

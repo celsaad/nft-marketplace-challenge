@@ -31,7 +31,7 @@ export function FavoriteButton({
   const t = useT()
   const { isFavorite, toggle, pending } = useFavorite(nftId)
   const heart = (
-    <HeartIcon aria-hidden className={cn('transition-colors', isFavorite && 'fill-primary text-primary')} />
+    <HeartIcon aria-hidden className={cn('transition-colors', isFavorite && 'fill-primary text-highlight')} />
   )
 
   if (variant === 'labeled') {
@@ -43,7 +43,7 @@ export function FavoriteButton({
         aria-busy={pending || undefined}
         onClick={toggle}
         className={cn(
-          'h-10 border-primary bg-transparent px-4 text-primary hover:bg-primary/10 hover:text-primary-hover dark:bg-transparent',
+          'h-10 border-primary bg-transparent px-4 text-highlight hover:bg-primary/10 hover:text-primary-hover dark:bg-transparent',
           className,
         )}
       >
@@ -61,7 +61,7 @@ export function FavoriteButton({
       aria-label={t('catalog.favorite.aria', { name: nftName })}
       onClick={toggle}
       className={cn(
-        'grid size-9 place-items-center rounded-full bg-background/80 text-primary backdrop-blur-sm transition-colors hover:bg-background [&_svg]:size-[18px]',
+        'grid size-9 place-items-center rounded-full bg-background/80 text-highlight backdrop-blur-sm transition-colors hover:bg-background [&_svg]:size-[18px]',
         className,
       )}
     >

@@ -36,7 +36,7 @@ export function FormField({
 
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
-      <Label htmlFor={id}>
+      <Label htmlFor={id} className="font-normal md:text-[15px]">
         {label}
         {required && (
           <span aria-hidden className="text-destructive">

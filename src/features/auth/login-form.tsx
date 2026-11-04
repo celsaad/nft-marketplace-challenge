@@ -78,7 +78,7 @@ export function LoginForm({ redirect, reason }: { redirect?: string; reason?: 'e
           <Link
             to="/cadastro"
             search={{ redirect }}
-            className="underline-offset-4 hover:text-primary hover:underline"
+            className="underline-offset-4 hover:text-highlight hover:underline"
           >
             {t('account.auth.createAccount')}
           </Link>
@@ -114,7 +114,7 @@ export function LoginForm({ redirect, reason }: { redirect?: string; reason?: 'e
         <button
           type="button"
           onClick={() => notifyUnavailable()}
-          className="self-end rounded-sm text-sm text-primary hover:text-primary-hover md:text-xs"
+          className="self-end rounded-sm text-sm text-highlight hover:text-primary-hover"
         >
           {t('account.auth.forgotPassword')}
         </button>

@@ -37,10 +37,10 @@ export function WalletPicker({
   return (
     <section aria-labelledby="wallet-picker-title" className="flex flex-col gap-4">
       <div className="flex items-baseline justify-between gap-4">
-        <h2 id="wallet-picker-title" className="text-lg font-bold md:mx-auto md:text-base">
+        <h2 id="wallet-picker-title" className="text-lg font-bold md:mx-auto md:text-[17px]">
           {t('purchase.checkout.walletAndNetwork')}
         </h2>
-        <Link to="/carteiras" className="text-sm font-bold text-primary hover:text-primary-hover md:hidden">
+        <Link to="/carteiras" className="text-sm font-bold text-highlight hover:text-primary-hover md:hidden">
           {t('purchase.checkout.manageWallets')}
         </Link>
       </div>
@@ -48,7 +48,7 @@ export function WalletPicker({
       {wallets.length === 0 ? (
         <p className="text-sm text-destructive">
           {t('purchase.checkout.noWallets')}{' '}
-          <Link to="/carteiras" className="font-bold text-primary underline">
+          <Link to="/carteiras" className="font-bold text-highlight underline">
             {t('purchase.checkout.manageWallets')}
           </Link>
         </p>
@@ -78,10 +78,10 @@ export function WalletPicker({
                 className="size-5 border-primary"
               />
               <span className="flex min-w-0 flex-col gap-0.5">
-                <span className="font-bold md:font-normal">
+                <span className="font-bold md:text-[15px] md:font-normal">
                   {t(`purchase.provider.${wallet.provider}`)} · {wallet.label}
                   {wallet.isPrimary && (
-                    <span className="ml-2 rounded-sm bg-band px-1.5 text-[10px] font-bold text-primary uppercase">
+                    <span className="ml-2 rounded-sm bg-band px-1.5 text-[10px] font-bold text-highlight uppercase">
                       {t('purchase.checkout.primary')}
                     </span>
                   )}
@@ -133,7 +133,7 @@ export function WalletPicker({
             <Button
               type="button"
               variant="outline"
-              className="self-start border-primary text-primary"
+              className="self-start border-primary text-highlight"
               onClick={onConnect}
               disabled={status === 'connecting'}
             >

@@ -24,7 +24,7 @@ export function Recommendations({ exclude }: { exclude: ReadonlySet<string> }) {
     <section aria-labelledby="recommendations-title" className="flex flex-col gap-8">
       <h2
         id="recommendations-title"
-        className="border-b border-border pb-3 text-[17px] font-bold text-primary"
+        className="border-b border-border pb-3 text-[17px] font-bold text-highlight"
       >
         {t('purchase.cart.recommendations')}
       </h2>
@@ -37,7 +37,7 @@ export function Recommendations({ exclude }: { exclude: ReadonlySet<string> }) {
                     <NftImage image={nft.image} alt={nft.imageAlt} sizes="(min-width: 768px) 220px, 176px" />
                   </div>
                   <span className="text-[15px] group-hover:text-primary-hover">{nft.name}</span>
-                  <span className="-mt-2 font-bold text-primary">
+                  <span className="-mt-2 font-bold text-highlight">
                     <EthAmount value={nft.price} />
                   </span>
                 </Link>

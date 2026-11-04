@@ -38,7 +38,7 @@ export function AttemptNotice({
     content = (
       <div className={cn(box, 'border-primary/70 bg-band')} data-testid="quote-changed">
         <p className="flex items-center gap-2 font-bold">
-          <TriangleAlertIcon aria-hidden className="size-4 text-primary" />
+          <TriangleAlertIcon aria-hidden className="size-4 text-highlight" />
           {t('purchase.review.quoteChanged')}
         </p>
         {next ? (

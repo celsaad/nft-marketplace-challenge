@@ -29,7 +29,7 @@ const LATENCY_PRESETS = {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3 border-t border-border pt-4">
-      <h3 className="text-sm font-bold text-primary">{title}</h3>
+      <h3 className="text-sm font-bold text-highlight">{title}</h3>
       {children}
     </section>
   )
@@ -102,7 +102,7 @@ export function MockLab({ api }: { api: MockApi }) {
         <Button
           size="sm"
           variant="outline"
-          className="fixed bottom-24 left-4 z-50 border-primary bg-card text-primary shadow-lg md:bottom-4"
+          className="fixed bottom-24 left-4 z-50 border-primary bg-card text-highlight shadow-lg md:bottom-4"
         >
           <FlaskConicalIcon aria-hidden />
           Mock Lab

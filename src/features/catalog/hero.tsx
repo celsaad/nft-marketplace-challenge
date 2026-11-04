@@ -28,7 +28,7 @@ export function Hero() {
       setApi={setApi}
       opts={{ loop: false }}
       aria-label={t('catalog.hero.label')}
-      className="mx-auto w-full max-w-[1200px] px-4 md:px-6"
+      className="mx-auto w-full max-w-[1248px] px-4 md:px-6"
     >
       <CarouselContent>
         {SLIDES.map((slide, i) => {
@@ -46,8 +46,10 @@ export function Hero() {
                   className="absolute top-1/2 left-1/3 size-72 -translate-y-1/3 rounded-full bg-white/5 md:hidden"
                 />
                 <div className="relative flex flex-col gap-2 md:gap-4 md:pl-10">
-                  <p className="text-[0.8125rem] text-foreground md:text-xs">{t('catalog.hero.welcome')}</p>
-                  <Title className="text-lg leading-snug font-bold tracking-wide uppercase md:text-3xl md:leading-[1.4] lg:text-[2.5rem] lg:leading-[1.5]">
+                  <p className="text-[0.8125rem] text-foreground md:text-sm md:font-medium">
+                    {t('catalog.hero.welcome')}
+                  </p>
+                  <Title className="text-lg leading-snug font-bold tracking-wide uppercase md:text-3xl md:leading-[1.4] lg:text-[2.6875rem] lg:leading-[1.5]">
                     <span className="md:hidden">{t(key(i, 'titleMobile'))}</span>
                     <span className="hidden md:inline">{t(key(i, 'title'))}</span>
                   </Title>
@@ -59,14 +61,14 @@ export function Hero() {
                     to="/"
                     hash="mercado"
                     search={(prev) => prev}
-                    className="inline-flex items-center gap-2 text-sm font-bold text-primary uppercase md:hidden"
+                    className="inline-flex items-center gap-2 text-sm font-bold text-highlight uppercase md:hidden"
                   >
                     {t('catalog.hero.explore')}
                     <ArrowRightIcon aria-hidden className="size-4" />
                   </Link>
                   <Button
                     asChild
-                    className="mt-4 hidden h-9 w-fit rounded-sm px-7 text-xs font-bold uppercase md:inline-flex"
+                    className="mt-4 hidden h-9 w-fit rounded-sm px-7 text-base font-bold uppercase md:inline-flex"
                   >
                     <Link to="/" hash="mercado" search={(prev) => prev}>
                       {t('catalog.hero.explore')}

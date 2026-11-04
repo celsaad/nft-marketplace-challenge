@@ -19,7 +19,7 @@ export function pageWindow(page: number, pages: number): (number | null)[] {
 }
 
 const cell =
-  'grid size-8 place-items-center rounded-sm border border-border text-xs tabular-nums transition-colors hover:border-primary hover:text-primary md:size-7'
+  'grid size-8 place-items-center rounded-sm border border-border text-xs tabular-nums transition-colors hover:border-primary hover:text-highlight md:size-7'
 
 const to = (page: number) => (prev: CatalogSearch) => goToPage(prev, page)
 

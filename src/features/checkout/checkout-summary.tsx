@@ -33,7 +33,7 @@ export function QuotedLines({ quote, cart, className }: { quote: Quote; cart: Ca
               <span className="text-sm text-muted-foreground">
                 {t('purchase.order.quantity', { quantity: quoted.quantity })}
               </span>
-              <span className="text-lg font-bold text-primary">
+              <span className="text-lg font-bold text-highlight">
                 <EthAmount value={quoted.lineTotal} />
               </span>
             </p>
@@ -51,7 +51,10 @@ export function CheckoutSummary({ quote, cart }: { quote: Quote | undefined; car
       <h2 id="checkout-summary-title" className="text-[17px] font-bold">
         {t('purchase.checkout.yourNfts')}
       </h2>
-      <div aria-hidden className="flex justify-between border-b border-border pb-2 text-[15px] font-bold">
+      <div
+        aria-hidden
+        className="flex justify-between border-b border-border pb-2 text-[15px] font-bold md:text-base"
+      >
         <span>{t('purchase.order.col.nfts')}</span>
         <span>{t('purchase.order.col.subtotal')}</span>
       </div>

@@ -63,7 +63,7 @@ export function SignupForm({ redirect }: { redirect?: string }) {
           <Link
             to="/entrar"
             search={{ redirect }}
-            className="underline-offset-4 hover:text-primary hover:underline"
+            className="underline-offset-4 hover:text-highlight hover:underline"
           >
             {t('account.auth.goLogin')}
           </Link>

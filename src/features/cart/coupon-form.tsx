@@ -57,7 +57,7 @@ export function CouponForm({
     return (
       <div className="flex items-center justify-between gap-3 rounded-md border border-primary/60 px-3 py-2">
         <p className="flex items-center gap-2 text-sm">
-          <TicketIcon aria-hidden className="size-4 text-primary" />
+          <TicketIcon aria-hidden className="size-4 text-highlight" />
           {t('purchase.coupon.applied', { code: couponCode })}
         </p>
         <button
@@ -84,7 +84,7 @@ export function CouponForm({
 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-2">
-      <Label htmlFor={id} className="sr-only text-[13px] font-bold md:not-sr-only">
+      <Label htmlFor={id} className="sr-only text-sm font-bold md:not-sr-only">
         {t('purchase.coupon.label')}
       </Label>
       <div className="flex">
@@ -107,7 +107,7 @@ export function CouponForm({
         <button
           type="submit"
           disabled={apply.isPending}
-          className="-ml-6 inline-flex h-14 items-center gap-2 rounded-full bg-gradient-to-r from-primary to-[#b97c48] px-7 text-lg font-bold text-primary-foreground transition-colors hover:from-primary-hover disabled:opacity-70 md:ml-0 md:h-10 md:rounded-none md:bg-primary md:bg-none md:px-5 md:text-sm"
+          className="-ml-6 inline-flex h-14 items-center gap-2 rounded-full bg-gradient-to-r from-primary to-[#b97c48] px-7 text-lg font-bold text-primary-foreground transition-colors hover:from-primary-hover disabled:opacity-70 md:ml-0 md:h-10 md:rounded-none md:bg-primary md:bg-none md:px-5 md:text-[15px]"
         >
           {apply.isPending && (
             <Loader2Icon aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />

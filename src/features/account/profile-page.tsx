@@ -206,7 +206,9 @@ function ProfileForms({ me, primary }: { me: Collector; primary: Wallet | undefi
       </div>
 
       <fieldset className="mt-10 flex flex-col gap-6 md:max-w-[calc(50%-14px)] md:gap-[18px]">
-        <legend className="mb-6 text-base font-bold md:mb-4">{t('account.profile.passwordTitle')}</legend>
+        <legend className="mb-6 text-base font-bold md:mb-4 md:font-medium">
+          {t('account.profile.passwordTitle')}
+        </legend>
         <FormField label={t('account.profile.currentPassword')} error={we.currentPassword?.message}>
           <PasswordInput
             autoComplete="current-password"

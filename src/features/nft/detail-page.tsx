@@ -19,7 +19,7 @@ import { MoreFromCollection } from './more-from-collection'
 import { EditionPicker, type Purchase, PurchasePanel, usePurchase } from './purchase'
 import { isNotFound, nftQuery } from './queries'
 
-const page = 'mx-auto w-full max-w-[1200px] px-4 md:px-6'
+const page = 'mx-auto w-full max-w-[1248px] px-4 md:px-6'
 
 export function NftDetailPage({ nftId }: { nftId: string }) {
   const t = useT()
@@ -61,13 +61,13 @@ function Detail({ nft }: { nft: NftDetail }) {
         <nav aria-label={t('catalog.nft.breadcrumb')} className="hidden md:block">
           <ol className="flex items-center gap-2 text-[0.8125rem] font-bold">
             <li>
-              <Link to="/" className="hover:text-primary">
+              <Link to="/" className="hover:text-highlight">
                 {t('catalog.nft.home')}
               </Link>
             </li>
             <li aria-hidden>/</li>
             <li>
-              <Link to="/" hash="mercado" className="hover:text-primary">
+              <Link to="/" hash="mercado" className="hover:text-highlight">
                 {t('catalog.nft.market')}
               </Link>
             </li>
@@ -104,7 +104,7 @@ function MobileTopBar({ nft }: { nft: NftDetail }) {
   const router = useRouter()
   const canGoBack = useCanGoBack()
   const circle =
-    'grid size-11 place-items-center rounded-full border border-border bg-card text-foreground hover:text-primary'
+    'grid size-11 place-items-center rounded-full border border-border bg-card text-foreground hover:text-highlight'
   return (
     <div className="flex items-center justify-between md:hidden">
       {canGoBack ? (
@@ -129,13 +129,13 @@ function MobileTopBar({ nft }: { nft: NftDetail }) {
 function Info({ nft, purchase }: { nft: NftDetail; purchase: Purchase }) {
   const t = useT()
   const announcement = useLiveChanges(nft, purchase)
-  const share = 'grid size-6 place-items-center text-foreground hover:text-primary'
+  const share = 'grid size-6 place-items-center text-foreground hover:text-highlight'
   return (
     <div className="flex min-w-0 flex-col gap-4 md:gap-3">
       <div className="flex items-start justify-between gap-3">
         <h1 className="text-2xl font-bold md:text-[1.75rem]">{nft.name}</h1>
         <p className="flex shrink-0 items-center gap-1 rounded-full border border-primary px-2.5 py-1 text-sm md:hidden">
-          <StarIcon aria-hidden className="size-4 fill-primary text-primary" />
+          <StarIcon aria-hidden className="size-4 fill-primary text-highlight" />
           <span aria-hidden>
             {nft.rating.average.toFixed(1)}({nft.rating.count})
           </span>
@@ -147,8 +147,8 @@ function Info({ nft, purchase }: { nft: NftDetail; purchase: Purchase }) {
       </div>
 
       <div className="hidden flex-wrap items-center justify-between gap-3 border-b border-border pb-3 md:flex">
-        <EthAmount value={nft.price} className="text-xl font-bold text-primary" />
-        <p className="flex items-center gap-2 text-[0.8125rem]">
+        <EthAmount value={nft.price} className="text-xl font-bold text-highlight md:text-[22px]" />
+        <p className="flex items-center gap-2 text-[0.8125rem] md:text-[15px]">
           <Stars value={nft.rating.average} />
           <span className="sr-only">
             {t('catalog.nft.rating', { average: nft.rating.average.toFixed(1) })}.
@@ -162,18 +162,16 @@ function Info({ nft, purchase }: { nft: NftDetail; purchase: Purchase }) {
       </p>
 
       <section aria-labelledby="about-title" className="flex flex-col gap-2">
-        <h2 id="about-title" className="hidden text-[0.8125rem] font-bold md:block">
+        <h2 id="about-title" className="hidden text-[15px] font-bold md:block">
           {t('catalog.nft.about')}
         </h2>
-        <p className="text-sm leading-relaxed text-muted-foreground md:text-[0.8125rem] md:leading-[1.65]">
-          {nft.description}
-        </p>
+        <p className="text-sm leading-relaxed text-muted-foreground md:leading-[1.65]">{nft.description}</p>
       </section>
 
       <EditionPicker nft={nft} purchase={purchase} />
       <PurchasePanel nft={nft} purchase={purchase} className="max-md:order-last md:mt-1" />
 
-      <dl className="flex flex-col gap-2 text-sm text-muted-foreground md:text-[0.8125rem]">
+      <dl className="flex flex-col gap-2 text-sm text-muted-foreground md:text-[15px]">
         {(
           [
             ['tokenId', `#${nft.tokenId.padStart(4, '0')}`],
@@ -189,7 +187,7 @@ function Info({ nft, purchase }: { nft: NftDetail; purchase: Purchase }) {
       </dl>
 
       <div className="hidden items-center gap-3 md:flex">
-        <p className="text-[0.8125rem] font-bold">{t('catalog.nft.share')}</p>
+        <p className="text-[0.8125rem] font-bold md:text-[15px]">{t('catalog.nft.share')}</p>
         <ul className="flex items-center gap-2">
           <li>
             <button
@@ -260,7 +258,7 @@ function NftNotFound() {
   const t = useT()
   return (
     <section className="mx-auto flex max-w-xl flex-col items-center gap-4 px-4 py-24 text-center">
-      <p aria-hidden className="text-5xl font-bold text-primary">
+      <p aria-hidden className="text-5xl font-bold text-highlight">
         404
       </p>
       <h1 className="text-2xl font-bold">{t('catalog.nft.notFoundTitle')}</h1>

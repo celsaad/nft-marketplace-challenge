@@ -90,7 +90,7 @@ export function QuoteIssuesNotice({
       {issues.length > 0 && (
         <div className="flex flex-col gap-2 rounded-lg border border-primary/60 bg-band p-4">
           <span className="flex items-center gap-2 font-bold">
-            <TriangleAlertIcon aria-hidden className="size-4 text-primary" />
+            <TriangleAlertIcon aria-hidden className="size-4 text-highlight" />
             {t('purchase.issues.title')}
           </span>
           <IssueList issues={issues} names={names} />

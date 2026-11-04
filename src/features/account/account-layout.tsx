@@ -27,9 +27,9 @@ const OUT_OF_SCOPE: { label: MessageKey; icon: typeof UserIcon }[] = [
 ]
 
 const item =
-  'relative flex items-center gap-3 rounded-sm px-4 py-2.5 text-sm text-primary transition-colors hover:text-primary-hover md:py-3'
+  'relative flex items-center gap-3 rounded-sm px-4 py-2.5 text-sm text-highlight transition-colors hover:text-primary-hover md:py-3 md:text-[15px]'
 const activeItem =
-  'data-[status=active]:bg-surface-raised data-[status=active]:font-medium md:data-[status=active]:bg-transparent md:data-[status=active]:before:absolute md:data-[status=active]:before:inset-y-0 md:data-[status=active]:before:left-0 md:data-[status=active]:before:w-1.5 md:data-[status=active]:before:bg-primary'
+  'data-[status=active]:bg-surface-raised data-[status=active]:font-medium md:data-[status=active]:bg-transparent md:data-[status=active]:font-normal md:data-[status=active]:before:absolute md:data-[status=active]:before:inset-y-0 md:data-[status=active]:before:left-0 md:data-[status=active]:before:w-1.5 md:data-[status=active]:before:bg-primary'
 
 export function AccountLayout({ children }: { children: ReactNode }) {
   const t = useT()
@@ -42,7 +42,7 @@ export function AccountLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 pt-6 pb-28 md:flex-row md:gap-7 md:px-6 md:pt-8 md:pb-24">
+    <div className="mx-auto flex max-w-[1248px] flex-col gap-6 px-4 pt-6 pb-28 md:flex-row md:gap-7 md:px-6 md:pt-8 md:pb-24">
       <aside className="shrink-0 rounded-sm bg-card md:w-[310px] md:self-start">
         <p className="px-2.5 pt-4 pb-2 text-lg font-bold md:pt-5">{t('account.nav.title')}</p>
         <nav aria-label={t('account.nav.label')}>

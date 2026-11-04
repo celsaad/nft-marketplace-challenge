@@ -78,7 +78,7 @@ export function Gallery({ nft, className }: { nft: NftDetail; className?: string
         <Dialog>
           <DialogTrigger
             aria-label={t('catalog.nft.zoom')}
-            className="absolute top-3 right-3 grid size-10 place-items-center rounded-full bg-background/80 text-foreground backdrop-blur-sm transition-colors hover:text-primary md:top-6 md:right-6 md:size-8"
+            className="absolute top-3 right-3 grid size-10 place-items-center rounded-full bg-background/80 text-foreground backdrop-blur-sm transition-colors hover:text-highlight md:top-6 md:right-6 md:size-8"
           >
             <SearchIcon aria-hidden className="size-5" />
           </DialogTrigger>

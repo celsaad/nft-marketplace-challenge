@@ -56,7 +56,7 @@ function OrderView({ collectorId, orderId }: { collectorId: string; orderId: str
           title={kind === 'forbidden' ? t('purchase.order.forbidden') : undefined}
           onRetry={kind === 'forbidden' || kind === 'notFound' ? undefined : () => void order.refetch()}
         />
-        <Link to="/" className="self-center font-bold text-primary hover:text-primary-hover">
+        <Link to="/" className="self-center font-bold text-highlight hover:text-primary-hover">
           {t('purchase.order.backHome')}
         </Link>
       </section>
@@ -96,7 +96,7 @@ function OrderCard({ order, collectorId }: { order: Order; collectorId: string }
         <Link
           to="/"
           aria-label={t('purchase.order.close')}
-          className="absolute top-3 right-3 grid size-9 place-items-center rounded-full text-primary hover:bg-surface-raised"
+          className="absolute top-3 right-3 grid size-9 place-items-center rounded-full text-highlight hover:bg-surface-raised"
         >
           <XIcon aria-hidden className="size-5" />
         </Link>
@@ -106,7 +106,7 @@ function OrderCard({ order, collectorId }: { order: Order; collectorId: string }
           {order.status === 'pending' && (
             <Loader2Icon
               aria-hidden
-              className="size-14 animate-spin text-primary motion-reduce:animate-none"
+              className="size-14 animate-spin text-highlight motion-reduce:animate-none"
             />
           )}
           {order.status === 'rejected' && <XCircleIcon aria-hidden className="size-14 text-destructive" />}
@@ -206,7 +206,9 @@ function Fact({
   return (
     <div className={cn('flex min-w-0 flex-col px-3 md:border-r md:border-primary', last && 'md:border-r-0')}>
       <dt className={cn('text-muted-foreground', strong && 'font-bold')}>{label}</dt>
-      <dd className="break-words text-muted-foreground tabular-nums">{value}</dd>
+      <dd className="break-words text-muted-foreground tabular-nums md:text-[15px] md:text-foreground">
+        {value}
+      </dd>
     </div>
   )
 }
@@ -216,7 +218,7 @@ function ReceiptLines({ receipt }: { receipt: Receipt }) {
   return (
     <table className="w-full table-fixed border-collapse text-left">
       <thead>
-        <tr className="border-b border-border text-[15px]">
+        <tr className="border-b border-border text-[15px] md:text-base">
           <th scope="col" className="pb-2 font-bold">
             {t('purchase.order.col.nfts')}
           </th>
@@ -250,7 +252,7 @@ function ReceiptLines({ receipt }: { receipt: Receipt }) {
             <td className="text-center text-sm text-muted-foreground">
               {t('purchase.order.quantity', { quantity: line.quantity })}
             </td>
-            <td className="text-right font-bold text-primary">
+            <td className="text-right font-bold text-highlight">
               <EthAmount value={line.lineTotal} />
             </td>
           </tr>
@@ -264,7 +266,10 @@ function ReceiptTotals({ receipt }: { receipt: Receipt }) {
   const t = useT()
   const row = 'grid grid-cols-[minmax(0,1fr)_auto] gap-4 md:grid-cols-[1fr_auto] md:pl-[36%]'
   return (
-    <dl className="flex flex-col gap-2 border-b border-border pb-3 text-[15px]" data-testid="receipt-totals">
+    <dl
+      className="flex flex-col gap-2 border-b border-border pb-3 text-[15px] md:[&_dd]:text-lg"
+      data-testid="receipt-totals"
+    >
       {!isZero(receipt.discount) && (
         <>
           <div className={row}>
@@ -285,9 +290,9 @@ function ReceiptTotals({ receipt }: { receipt: Receipt }) {
           <EthAmount value={receipt.networkFee} />
         </dd>
       </div>
-      <div className={cn(row, 'font-bold')}>
+      <div className={cn(row, 'font-bold md:text-base')}>
         <dt>{t('purchase.summary.total')}</dt>
-        <dd className="text-primary" data-testid="receipt-total">
+        <dd className="text-highlight" data-testid="receipt-total">
           <EthAmount value={receipt.total} />
         </dd>
       </div>
@@ -301,7 +306,7 @@ function ThankYouIcon() {
     <svg
       aria-hidden
       viewBox="0 0 72 80"
-      className="h-20 w-[68px] text-primary"
+      className="h-20 w-[68px] text-highlight"
       fill="none"
       stroke="currentColor"
       strokeWidth="2.5"

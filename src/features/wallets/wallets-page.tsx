@@ -53,7 +53,7 @@ export function WalletsPage() {
               addLabel={t('account.wallets.addPrimary')}
               onAdd={() => setAddingPrimary(true)}
             >
-              <p className="mt-1 text-xs tracking-wide text-muted-foreground">
+              <p className="mt-1 text-xs tracking-wide text-muted-foreground md:text-sm">
                 {t('account.wallets.description')}
               </p>
             </SectionHeader>
@@ -166,7 +166,7 @@ function SectionHeader({
   return (
     <div className="flex flex-wrap items-start justify-between gap-4">
       <div className="min-w-0">
-        <h2 id={id} className="text-base font-bold">
+        <h2 id={id} className="text-base font-bold md:text-[17px]">
           {title}
         </h2>
         {children}
@@ -178,7 +178,7 @@ function SectionHeader({
           type="button"
           onClick={onAdd}
           aria-label={addLabel}
-          className="shrink-0 rounded-sm text-base font-bold text-primary hover:text-primary-hover"
+          className="shrink-0 rounded-sm text-base font-bold text-highlight hover:text-primary-hover md:font-medium"
         >
           {t('account.wallets.add')}
         </button>
@@ -250,7 +250,7 @@ function SecondaryWallet({
             aria-label={t(editing ? 'account.wallets.collapse' : 'account.wallets.editLabel', {
               label: wallet.label,
             })}
-            className="border-primary text-primary"
+            className="border-primary text-highlight"
           >
             {t(editing ? 'account.wallets.collapse' : 'account.wallets.edit')}
           </Button>

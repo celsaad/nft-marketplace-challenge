@@ -17,7 +17,7 @@ export function PasswordInput({ className, ...props }: Omit<ComponentProps<typeo
         onClick={() => setVisible((v) => !v)}
         aria-pressed={visible}
         aria-label={t('account.auth.showPassword')}
-        className="absolute inset-y-0 right-0 grid w-10 place-items-center rounded-r-md text-subtle-foreground hover:text-primary"
+        className="absolute inset-y-0 right-0 grid w-10 place-items-center rounded-r-md text-subtle-foreground hover:text-highlight"
       >
         {visible ? <EyeIcon aria-hidden className="size-4" /> : <EyeOffIcon aria-hidden className="size-4" />}
       </button>

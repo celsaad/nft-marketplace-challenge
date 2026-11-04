@@ -40,7 +40,7 @@ function OptionList<K extends string>({
 }) {
   return (
     <fieldset className="flex flex-col gap-1">
-      <legend className="mb-2 text-sm font-medium">{legend}</legend>
+      <legend className="mb-2 text-sm font-medium md:text-lg md:font-bold">{legend}</legend>
       <ul className="flex flex-col">
         {options.map((key) => {
           const on = selected?.includes(key) ?? false
@@ -51,8 +51,8 @@ function OptionList<K extends string>({
                 aria-pressed={on}
                 onClick={() => onToggle(key)}
                 className={cn(
-                  'flex min-h-10 w-full items-center gap-2 rounded-md px-2 text-left text-[0.8125rem] text-muted-foreground transition-colors hover:bg-surface-raised hover:text-foreground md:min-h-9',
-                  on && 'bg-primary/15 font-bold text-primary hover:text-primary',
+                  'flex min-h-10 w-full items-center gap-2 rounded-md px-2 text-left text-[0.8125rem] text-muted-foreground md:text-[15px] transition-colors hover:bg-surface-raised hover:text-foreground md:min-h-9',
+                  on && 'bg-primary/15 font-bold text-highlight hover:text-highlight',
                 )}
               >
                 <CheckIcon aria-hidden className={cn('size-3.5 shrink-0', !on && 'invisible')} />
@@ -100,7 +100,9 @@ function PriceRange({
 
   return (
     <fieldset className="flex flex-col gap-3">
-      <legend className="mb-3 text-sm font-medium">{t('catalog.filters.price')}</legend>
+      <legend className="mb-3 text-sm font-medium md:text-lg md:font-bold">
+        {t('catalog.filters.price')}
+      </legend>
       {range ? (
         // Radix directly (not the shadcn wrapper) so each thumb gets its own accessible name.
         <SliderPrimitive.Root
@@ -131,7 +133,7 @@ function PriceRange({
       ) : (
         <Skeleton className="h-5 w-full" />
       )}
-      <p className="text-xs text-foreground" aria-live="polite">
+      <p className="text-xs text-foreground md:text-sm" aria-live="polite">
         {t('catalog.filters.priceValue', {
           min: formatEth(fromSteps(draft[0])).replace(' ETH', ''),
           max: formatEth(fromSteps(draft[1])),
@@ -142,7 +144,7 @@ function PriceRange({
           type="button"
           size="sm"
           onClick={() => onApply(...toEth(draft))}
-          className="h-7 w-fit rounded-sm px-2.5 text-xs font-bold"
+          className="h-7 w-fit rounded-sm px-2.5 text-xs font-bold md:h-8 md:text-base"
           disabled={!range}
         >
           {t('catalog.filters.apply')}

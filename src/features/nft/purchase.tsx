@@ -98,7 +98,7 @@ export function EditionPicker({ nft, purchase }: { nft: NftDetail; purchase: Pur
   const soldOutLabels = nft.editions.filter((e) => !isAvailable(e)).map((e) => purchase.label(e))
   return (
     <div className="flex flex-col gap-2">
-      <p id="edition-label" className="text-sm font-bold md:text-[0.8125rem]">
+      <p id="edition-label" className="text-sm font-bold md:text-[15px]">
         {t('catalog.nft.edition')}
       </p>
       <RadioGroupPrimitive.Root
@@ -115,8 +115,8 @@ export function EditionPicker({ nft, purchase }: { nft: NftDetail; purchase: Pur
             value={edition.id}
             disabled={!isAvailable(edition)}
             className={cn(
-              'min-h-8 rounded-full border border-border px-2.5 text-xs text-foreground tabular-nums transition-colors hover:border-primary',
-              'data-[state=checked]:border-primary data-[state=checked]:font-bold data-[state=checked]:text-primary',
+              'min-h-8 rounded-full border border-border px-2.5 text-xs text-muted-foreground tabular-nums md:text-sm transition-colors hover:border-primary',
+              'data-[state=checked]:border-primary data-[state=checked]:font-medium data-[state=checked]:text-highlight',
               'disabled:cursor-not-allowed disabled:text-subtle-foreground disabled:line-through disabled:opacity-60 disabled:hover:border-border',
               'md:min-h-7 md:px-2',
             )}
@@ -210,14 +210,14 @@ export function PurchasePanel({
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Stepper purchase={purchase} disabled={blocked} />
-        <EthAmount value={nft.price} className="text-2xl font-bold text-primary md:hidden" />
+        <EthAmount value={nft.price} className="text-2xl font-bold text-highlight md:hidden" />
         <div className="hidden items-center gap-2 md:flex">
           <Button
             type="button"
             onClick={purchase.buy}
             disabled={blocked || purchase.pending}
             aria-describedby="purchase-hint"
-            className="h-10 min-w-36 rounded-sm text-xs font-bold uppercase hover:bg-primary-hover"
+            className="h-10 min-w-36 rounded-sm text-xs font-bold uppercase hover:bg-primary-hover md:text-sm"
           >
             {purchase.pending && (
               <span
@@ -231,7 +231,7 @@ export function PurchasePanel({
             nftId={nft.id}
             nftName={nft.name}
             variant="labeled"
-            className="rounded-sm text-xs"
+            className="rounded-sm text-xs md:text-sm md:font-medium"
           />
         </div>
       </div>
@@ -265,7 +265,7 @@ export function PurchasePanel({
         <Button
           asChild
           variant="ghost"
-          className="size-14 rounded-full border border-border bg-surface-raised text-primary"
+          className="size-14 rounded-full border border-border bg-surface-raised text-highlight"
         >
           <Link to="/carrinho" aria-label={t('catalog.nft.viewCart')}>
             <ShoppingCartIcon aria-hidden className="size-5" />

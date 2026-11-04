@@ -25,7 +25,10 @@ export function MoreFromCollection({ nft }: { nft: NftDetail }) {
 
   return (
     <section aria-labelledby="more-title" className="flex flex-col gap-6">
-      <h2 id="more-title" className="border-b border-border pb-2 text-sm font-bold text-primary md:text-base">
+      <h2
+        id="more-title"
+        className="border-b border-border pb-2 text-sm font-bold text-highlight md:text-[17px]"
+      >
         {t('catalog.nft.more')}
       </h2>
       {query.data ? (
@@ -37,7 +40,7 @@ export function MoreFromCollection({ nft }: { nft: NftDetail }) {
                 className={`${item} pl-6`}
                 aria-label={`${i + 1} / ${query.data.length}`}
               >
-                <NftCard nft={n} />
+                <NftCard nft={n} variant="carousel" />
               </CarouselItem>
             ))}
           </CarouselContent>

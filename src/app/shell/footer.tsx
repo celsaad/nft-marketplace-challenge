@@ -28,7 +28,7 @@ export function Footer() {
   const t = useT()
 
   return (
-    <footer className="mx-auto mt-24 mb-20 max-w-[1200px] px-4 md:mb-0 md:px-6">
+    <footer className="mx-auto mt-24 mb-20 max-w-[1248px] px-4 md:mb-0 md:px-6">
       <div className="grid gap-8 rounded-t-lg bg-card p-6 md:grid-cols-4 md:p-10">
         {FEATURES.map((feature) => (
           <section
@@ -41,12 +41,12 @@ export function Footer() {
             >
               {feature.letter}
             </span>
-            <h2 className="font-bold">{t(feature.title)}</h2>
+            <h2 className="font-bold md:text-[17px]">{t(feature.title)}</h2>
             <p className="text-sm leading-relaxed text-muted-foreground">{t(feature.body)}</p>
           </section>
         ))}
         <section className="flex flex-col gap-3">
-          <h2 className="font-bold leading-tight">{t('footer.newsletter.title')}</h2>
+          <h2 className="font-bold leading-tight md:text-lg">{t('footer.newsletter.title')}</h2>
           <form onSubmit={notifyUnavailable} className="flex">
             <label htmlFor="newsletter-email" className="sr-only">
               {t('footer.newsletter.placeholder')}
@@ -55,16 +55,18 @@ export function Footer() {
               id="newsletter-email"
               type="email"
               placeholder={t('footer.newsletter.placeholder')}
-              className="min-w-0 flex-1 rounded-r-none border-0 bg-surface-raised px-2 text-xs"
+              className="min-w-0 flex-1 rounded-r-none border-0 bg-surface-raised px-2 text-xs md:text-sm"
             />
             <button
               type="submit"
-              className="shrink-0 rounded-r-md bg-primary px-3 font-bold text-primary-foreground hover:bg-primary-hover"
+              className="shrink-0 rounded-r-md bg-primary px-3 font-bold text-primary-foreground md:text-lg hover:bg-primary-hover"
             >
               {t('footer.newsletter.submit')}
             </button>
           </form>
-          <p className="text-xs leading-relaxed text-muted-foreground">{t('footer.newsletter.body')}</p>
+          <p className="text-xs leading-relaxed text-muted-foreground md:text-[13px]">
+            {t('footer.newsletter.body')}
+          </p>
         </section>
       </div>
 
@@ -78,7 +80,7 @@ export function Footer() {
       <div className="grid gap-8 rounded-b-lg bg-card px-6 py-8 md:grid-cols-4 md:px-10">
         {COLUMNS.map((column) => (
           <nav key={column.title} aria-label={t(column.title)}>
-            <h2 className="mb-3 font-bold">{t(column.title)}</h2>
+            <h2 className="mb-3 font-bold md:text-lg">{t(column.title)}</h2>
             <ul className="flex flex-col gap-2 text-sm">
               {column.links.map((index) => (
                 <li key={index}>
@@ -92,7 +94,7 @@ export function Footer() {
         ))}
         <div className="flex flex-col gap-6">
           <section>
-            <h2 className="mb-3 font-bold">{t('footer.social')}</h2>
+            <h2 className="mb-3 font-bold md:text-lg">{t('footer.social')}</h2>
             <ul className="flex gap-2">
               {SOCIALS.map((social) => (
                 <li key={social.label}>
@@ -100,7 +102,7 @@ export function Footer() {
                     type="button"
                     onClick={() => notifyUnavailable()}
                     aria-label={social.label}
-                    className="grid size-8 place-items-center rounded-md border border-primary text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground"
+                    className="grid size-8 place-items-center rounded-md border border-primary text-xs font-bold text-highlight hover:bg-primary hover:text-primary-foreground"
                   >
                     {social.mark}
                   </button>
@@ -109,15 +111,15 @@ export function Footer() {
             </ul>
           </section>
           <section>
-            <h2 className="mb-3 font-bold">{t('footer.compatibleWallets')}</h2>
-            <p className="inline-block rounded-md border border-primary/60 bg-band px-3 py-1 text-[10px] font-bold tracking-wider text-primary">
+            <h2 className="mb-3 font-bold md:text-lg">{t('footer.compatibleWallets')}</h2>
+            <p className="inline-block rounded-md border border-primary/60 bg-band px-3 py-1 text-[10px] font-bold tracking-wider text-highlight">
               METAMASK · WALLETCONNECT · COINBASE
             </p>
           </section>
         </div>
       </div>
 
-      <p className="py-6 text-center text-xs">{t('footer.copyright')}</p>
+      <p className="py-6 text-center text-xs md:text-sm">{t('footer.copyright')}</p>
     </footer>
   )
 }
