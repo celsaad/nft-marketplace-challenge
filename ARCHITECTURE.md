@@ -145,10 +145,10 @@ Auditoria com Lighthouse CI (`pnpm lighthouse`, configs em `lighthouse/`) contra
 
 | Perfil | Página | Performance | Acessibilidade | Boas práticas | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|---|
-| mobile | Home | 93 | 100 | 100 | 100 | 3,04 s | 0,000 | 8 ms |
-| mobile | Detalhe do NFT | 95 | 100 | 100 | 100 | 2,86 s | 0,000 | 0 ms |
-| desktop | Home | 100 | 100 | 100 | 100 | 0,62 s | 0,000 | 0 ms |
-| desktop | Detalhe do NFT | 100 | 100 | 100 | 100 | 0,58 s | 0,004 | 0 ms |
+| mobile | Home | 93 | 100 | 100 | 100 | 3,04 s | 0,000 | 0 ms |
+| mobile | Detalhe do NFT | 94 | 100 | 100 | 100 | 2,80 s | 0,001 | 0 ms |
+| desktop | Home | 100 | 100 | 100 | 100 | 0,63 s | 0,000 | 0 ms |
+| desktop | Detalhe do NFT | 100 | 100 | 100 | 100 | 0,59 s | 0,004 | 0 ms |
 
 **Todas as metas são atingidas nos dois perfis. A home no mobile tem a menor folga, 3 pontos.**
 

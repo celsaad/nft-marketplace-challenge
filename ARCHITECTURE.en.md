@@ -164,10 +164,10 @@ Audited with Lighthouse CI (`pnpm lighthouse`, configs in `lighthouse/`) against
 
 | Profile | Page | Performance | Accessibility | Best Practices | SEO | LCP | CLS | TBT |
 |---|---|---|---|---|---|---|---|---|
-| mobile | Home | 93 | 100 | 100 | 100 | 3.04 s | 0.000 | 8 ms |
-| mobile | NFT detail | 95 | 100 | 100 | 100 | 2.86 s | 0.000 | 0 ms |
-| desktop | Home | 100 | 100 | 100 | 100 | 0.62 s | 0.000 | 0 ms |
-| desktop | NFT detail | 100 | 100 | 100 | 100 | 0.58 s | 0.004 | 0 ms |
+| mobile | Home | 93 | 100 | 100 | 100 | 3.04 s | 0.000 | 0 ms |
+| mobile | NFT detail | 94 | 100 | 100 | 100 | 2.80 s | 0.001 | 0 ms |
+| desktop | Home | 100 | 100 | 100 | 100 | 0.63 s | 0.000 | 0 ms |
+| desktop | NFT detail | 100 | 100 | 100 | 100 | 0.59 s | 0.004 | 0 ms |
 
 **Every target is met on both profiles. The mobile home page has the smallest margin, 3 points.**
 
