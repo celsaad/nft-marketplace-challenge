@@ -11,6 +11,7 @@ import { formatEth } from '@/lib/money/eth'
 import { EthAmount } from '@/ui/eth'
 import { ErrorState, LoadingRegion, Skeleton } from '@/ui/feedback'
 import { Button } from '@/ui/primitives/button'
+import { SectionBoundary } from '@/ui/section-boundary'
 import { notifyUnavailable } from '@/ui/unavailable'
 import { DetailTabs, Stars } from './detail-tabs'
 import { Gallery } from './gallery'
@@ -84,10 +85,14 @@ function Detail({ nft }: { nft: NftDetail }) {
       </div>
 
       <div className={page}>
-        <DetailTabs nft={nft} />
+        <SectionBoundary>
+          <DetailTabs nft={nft} />
+        </SectionBoundary>
       </div>
       <div className={page}>
-        <MoreFromCollection nft={nft} />
+        <SectionBoundary quiet>
+          <MoreFromCollection nft={nft} />
+        </SectionBoundary>
       </div>
       <FavoriteSignInDialog />
     </article>

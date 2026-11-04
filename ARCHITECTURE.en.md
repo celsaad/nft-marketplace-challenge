@@ -96,6 +96,11 @@ Every event carries `{ eventId, type, resourceId, version, occurredAt, userId }`
 | Optimistic update | Favorites: the screen changes immediately, one request per NFT at a time, the latest intent wins, and a failure rolls back to the last confirmed state |
 | Events | Update the NFT in the cache (only if the version is newer), invalidate the cart and quote if the NFT is in the cart, and the order on `order.updated` |
 
+**Failures, in three layers.**
+- **A failed request:** each query shows its own error state with "Tentar novamente" in the main content; secondary panels (featured NFT, "Mais desta coleção", cart recommendations) disappear without blocking the page. What to show (nothing if the session ended, field errors, or one message) is decided in one module, `src/ui/failure.ts`.
+- **A section that crashes while drawing (a bug):** `SectionBoundary` contains it; secondary sections disappear and the others show a notice with a retry. The header, footer and tab bar are contained too.
+- **A route that crashes:** the router's default error screen (`src/app/route-error.tsx`) shows inside the shell, in the app's look and language, with a retry and "Voltar ao início".
+
 ## 7. Reconciling REST and Socket.IO
 
 REST is the source of truth; events are versioned hints (ADR 0002). A missed event only costs a refetch: on reconnect, the client invalidates every active query and fetches it again over REST, instead of trying to replay missed events. Changes to the mock, whether made through REST, the Mock Lab or the tests, all go through the same store, which emits the event only after saving the change, so REST and events never disagree (ADR 0001).

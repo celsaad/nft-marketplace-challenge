@@ -29,11 +29,17 @@ export function ErrorState({
   onRetry,
   className,
   title,
+  message,
+  children,
 }: {
   error: unknown
   onRetry?: () => void
   className?: string
   title?: string
+  /** Overrides the wording derived from the error (e.g. a crash rather than a failed request). */
+  message?: string
+  /** Extra actions next to "Tentar novamente". */
+  children?: ReactNode
 }) {
   const t = useT()
   return (
@@ -46,13 +52,16 @@ export function ErrorState({
     >
       <TriangleAlertIcon aria-hidden className="size-6 text-destructive" />
       <p className="font-bold">{title ?? t('error.title')}</p>
-      <p className="text-sm text-muted-foreground">{t(errorMessageKey(error))}</p>
-      {onRetry && (
-        <Button type="button" onClick={onRetry}>
-          <RefreshCwIcon aria-hidden />
-          {t('state.retry')}
-        </Button>
-      )}
+      <p className="text-sm text-muted-foreground">{message ?? t(errorMessageKey(error))}</p>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        {onRetry && (
+          <Button type="button" onClick={onRetry}>
+            <RefreshCwIcon aria-hidden />
+            {t('state.retry')}
+          </Button>
+        )}
+        {children}
+      </div>
     </div>
   )
 }

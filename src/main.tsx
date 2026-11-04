@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 import { markBackendReady } from './app/backend-ready'
 import { config } from './app/config'
 import { queryClient } from './app/query/client'
+import { RouteError } from './app/route-error'
 import { bootSession } from './app/session/session'
 import { takeMockBoot } from './mocks/boot-url'
 import { routeTree } from './routeTree.gen'
@@ -13,7 +14,12 @@ import './styles.css'
 // Before the router reads the URL: the mock boot may rewrite it (drops `reset`).
 const mockBoot = config.mocksEnabled ? takeMockBoot() : null
 
-const router = createRouter({ routeTree, context: { queryClient }, defaultPreload: 'intent' })
+const router = createRouter({
+  routeTree,
+  context: { queryClient },
+  defaultPreload: 'intent',
+  defaultErrorComponent: RouteError,
+})
 
 declare module '@tanstack/react-router' {
   interface Register {

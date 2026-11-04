@@ -8,6 +8,7 @@ import { Announcer } from '@/ui/announcer'
 import { Button } from '@/ui/primitives/button'
 import { Toaster } from '@/ui/primitives/sonner'
 import { TooltipProvider } from '@/ui/primitives/tooltip'
+import { SectionBoundary } from '@/ui/section-boundary'
 
 export interface RouterContext {
   queryClient: QueryClient
@@ -28,12 +29,16 @@ function RootLayout() {
       >
         {t('nav.skipToContent')}
       </a>
-      <Header />
+      <SectionBoundary quiet>
+        <Header />
+      </SectionBoundary>
       <main id="main" tabIndex={-1} className="min-h-dvh outline-none">
         <Outlet />
       </main>
-      <Footer />
-      <MobileTabBar />
+      <SectionBoundary quiet>
+        <Footer />
+        <MobileTabBar />
+      </SectionBoundary>
       <Announcer />
       <Toaster position="top-center" />
     </TooltipProvider>

@@ -6,6 +6,7 @@ import { FavoritesResults } from '@/features/favorites/favorites-results'
 import { useT } from '@/lib/i18n'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/primitives/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/primitives/tabs'
+import { SectionBoundary } from '@/ui/section-boundary'
 import { FilterSidebar } from './catalog-filters'
 import { CatalogResults } from './catalog-results'
 import { FeaturedNft } from './featured-nft'
@@ -119,7 +120,9 @@ export function CatalogSection() {
       <div className="grid gap-8 lg:grid-cols-[310px_minmax(0,1fr)] lg:gap-12">
         <div className="hidden flex-col gap-6 lg:flex">
           <FilterSidebar />
-          <FeaturedNft />
+          <SectionBoundary quiet>
+            <FeaturedNft />
+          </SectionBoundary>
         </div>
         <div className="min-w-0">
           <CatalogTabs />

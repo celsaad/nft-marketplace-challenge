@@ -8,6 +8,7 @@ import type { CartLine } from '@/contracts/purchase'
 import { useT } from '@/lib/i18n'
 import { EmptyState, ErrorState, LoadingRegion, RefreshingHint, Skeleton } from '@/ui/feedback'
 import { reportFailure } from '@/ui/form/report-failure'
+import { SectionBoundary } from '@/ui/section-boundary'
 import { CartLineRow } from './cart-line'
 import { COUPON_INPUT_ID, CouponForm } from './coupon-form'
 import { useLineNames } from './line-names'
@@ -167,7 +168,9 @@ export function CartPage() {
       )}
 
       <div className="mt-12 hidden md:block">
-        <Recommendations exclude={new Set(lines.map((l) => l.nftId))} />
+        <SectionBoundary quiet>
+          <Recommendations exclude={new Set(lines.map((l) => l.nftId))} />
+        </SectionBoundary>
       </div>
     </section>
   )

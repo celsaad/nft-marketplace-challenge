@@ -88,6 +88,11 @@ Todo evento tem `{ eventId, type, resourceId, version, occurredAt, userId }` (AD
 | Atualização otimista | Favoritos: a tela muda na hora, um pedido por NFT por vez, a última intenção vence e uma falha volta ao último estado confirmado |
 | Eventos | Atualizam o NFT no cache (só se a versão for mais nova), invalidam carrinho e cotação se o NFT estiver no carrinho, e o pedido em `order.updated` |
 
+**Falhas, em três camadas.**
+- **Requisição que falha:** cada consulta mostra seu próprio estado de erro com "Tentar novamente" no conteúdo principal; painéis secundários (NFT em destaque, "Mais desta coleção", recomendações do carrinho) somem, sem travar a página. A decisão sobre o que mostrar (nada se a sessão acabou, erros nos campos, ou uma mensagem) fica em um só módulo, `src/ui/failure.ts`.
+- **Seção que quebra ao desenhar (bug):** `SectionBoundary` isola a seção; as secundárias somem e as demais mostram um aviso com nova tentativa. Cabeçalho, rodapé e barra de abas também ficam isolados.
+- **Rota que quebra:** a tela de erro padrão do roteador (`src/app/route-error.tsx`) aparece dentro do shell, no visual e no idioma do app, com nova tentativa e "Voltar ao início".
+
 ## 7. Reconciliação entre REST e Socket.IO
 
 O REST é a fonte da verdade; os eventos são avisos versionados (ADR 0002). Um evento perdido só custa uma nova busca: ao reconectar, o cliente invalida todas as consultas ativas e as busca de novo pelo REST, em vez de tentar reproduzir os eventos perdidos. Mudanças feitas no mock (pelo REST, pelo Mock Lab ou pelos testes) passam todas pela mesma base, que só emite o evento depois de gravar a mudança, então REST e eventos nunca discordam (ADR 0001).
