@@ -17,7 +17,9 @@ import { useLiveRegion } from '@/features/cart/live-region'
 import { useCart, useQuote } from '@/features/cart/queries'
 import { orderQuery } from '@/features/orders/queries'
 import { useT } from '@/lib/i18n'
+import { EthAmount } from '@/ui/eth'
 import { EmptyState, ErrorState, LoadingRegion, Skeleton } from '@/ui/feedback'
+import { MobileActionBar } from '@/ui/mobile-action-bar'
 import { Button } from '@/ui/primitives/button'
 import { readAttempt } from './attempt/storage'
 import { useCheckoutAttempt } from './attempt/use-checkout-attempt'
@@ -313,17 +315,24 @@ function CheckoutForm({
             <CheckoutSummary quote={shownQuote} cart={cart} />
           )}
         </div>
-        <div className="flex flex-col gap-4 md:col-start-2 md:row-start-3">
+        <MobileActionBar className="flex flex-col gap-4 max-md:rounded-t-[2rem] max-md:bg-card max-md:px-6 max-md:py-5 md:col-start-2 md:row-start-3">
           {!reviewOpen && <AttemptNotice attempt={attempt} names={names} />}
+          {shownQuote && (
+            // The mobile frame's total above the button (desktop shows it in the summary beside it).
+            <p aria-hidden className="flex justify-end gap-6 text-lg font-bold md:hidden">
+              <span>{t('purchase.summary.total')}:</span>
+              <EthAmount value={shownQuote.total} className="text-highlight" />
+            </p>
+          )}
           <Button
             ref={submitRef}
             type="submit"
             disabled={submitting}
-            className="h-16 rounded-full bg-gradient-to-r from-primary to-[#b97c48] text-lg font-bold text-primary-foreground hover:from-primary-hover md:h-11 md:rounded-md md:bg-primary md:bg-none md:text-[15px]"
+            className="h-[60px] rounded-full bg-gradient-to-r from-primary to-[#b97c48] text-[15px] font-bold text-primary-foreground hover:from-primary-hover md:h-11 md:rounded-md md:bg-primary md:bg-none md:text-[15px]"
           >
             {t('purchase.checkout.confirm')}
           </Button>
-        </div>
+        </MobileActionBar>
       </form>
 
       <ReviewDialog

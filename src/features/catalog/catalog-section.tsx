@@ -48,7 +48,7 @@ function SortSelect() {
 }
 
 const tabTrigger =
-  'h-auto flex-none rounded-none border-none px-0 pb-1.5 text-sm font-medium text-foreground shadow-none hover:text-primary-hover data-[state=active]:text-highlight md:text-[15px] dark:text-foreground dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-highlight after:bottom-0! after:bg-primary'
+  'h-auto flex-none rounded-none border-none px-0 pb-1.5 text-sm text-foreground shadow-none hover:text-primary-hover data-[state=active]:font-bold data-[state=active]:text-highlight md:text-[15px] md:font-medium md:data-[state=active]:font-medium dark:text-foreground dark:data-[state=active]:bg-transparent dark:data-[state=active]:text-highlight after:bottom-0! after:bg-primary'
 
 function CatalogTabs() {
   const t = useT()

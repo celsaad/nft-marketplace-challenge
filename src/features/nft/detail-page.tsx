@@ -133,7 +133,7 @@ function Info({ nft, purchase }: { nft: NftDetail; purchase: Purchase }) {
   return (
     <div className="flex min-w-0 flex-col gap-4 md:gap-3">
       <div className="flex items-start justify-between gap-3">
-        <h1 className="text-2xl font-bold md:text-[1.75rem]">{nft.name}</h1>
+        <h1 className="text-xl font-bold md:text-[1.75rem]">{nft.name}</h1>
         <p className="flex shrink-0 items-center gap-1 rounded-full border border-primary px-2.5 py-1 text-sm md:hidden">
           <StarIcon aria-hidden className="size-4 fill-primary text-highlight" />
           <span aria-hidden>

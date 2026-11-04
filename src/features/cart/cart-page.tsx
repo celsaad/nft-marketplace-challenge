@@ -8,6 +8,7 @@ import type { CartLine } from '@/contracts/purchase'
 import { useT } from '@/lib/i18n'
 import { EmptyState, ErrorState, LoadingRegion, RefreshingHint, Skeleton } from '@/ui/feedback'
 import { reportFailure } from '@/ui/form/report-failure'
+import { MobileActionBar } from '@/ui/mobile-action-bar'
 import { SectionBoundary } from '@/ui/section-boundary'
 import { CartLineRow } from './cart-line'
 import { COUPON_INPUT_ID, CouponForm } from './coupon-form'
@@ -129,41 +130,43 @@ export function CartPage() {
             </ul>
           </div>
 
-          <aside
-            aria-labelledby="cart-summary-title"
-            className="-mx-4 flex flex-col gap-5 rounded-t-[2rem] bg-card px-6 pt-6 pb-8 md:mx-0 md:rounded-none md:bg-transparent md:p-0"
-          >
-            <h2
-              id="cart-summary-title"
-              className="sr-only md:not-sr-only md:border-b md:border-border md:pb-3 md:text-lg md:font-bold"
+          <MobileActionBar className="max-md:rounded-t-[2rem] max-md:bg-card">
+            <aside
+              aria-labelledby="cart-summary-title"
+              className="flex flex-col gap-4 px-6 pt-6 pb-6 md:gap-5 md:p-0"
             >
-              {t('purchase.summary.title')}
-            </h2>
-            <CouponForm couponCode={cart.data.couponCode} say={say} inputId={COUPON_INPUT_ID} />
-            <div aria-live="polite" aria-busy={repricing} className="flex flex-col gap-2">
-              {quote.isError && !quote.data ? (
-                <ErrorState error={quote.error} onRetry={() => void quote.refetch()} />
-              ) : (
-                <QuoteTotals quote={quote.data} size="large" />
-              )}
-              <div className="min-h-4 self-end">
-                <RefreshingHint active={repricing && Boolean(quote.data)} />
+              <h2
+                id="cart-summary-title"
+                className="sr-only md:not-sr-only md:border-b md:border-border md:pb-3 md:text-lg md:font-bold"
+              >
+                {t('purchase.summary.title')}
+              </h2>
+              <CouponForm couponCode={cart.data.couponCode} say={say} inputId={COUPON_INPUT_ID} />
+              <div aria-live="polite" aria-busy={repricing} className="flex flex-col gap-2">
+                {quote.isError && !quote.data ? (
+                  <ErrorState error={quote.error} onRetry={() => void quote.refetch()} />
+                ) : (
+                  <QuoteTotals quote={quote.data} size="large" />
+                )}
+                <div className="min-h-4 self-end">
+                  <RefreshingHint active={repricing && Boolean(quote.data)} />
+                </div>
               </div>
-            </div>
-            <Link
-              to="/pagamento"
-              className="grid h-16 place-items-center rounded-full bg-gradient-to-r from-primary to-[#b97c48] text-lg font-bold text-primary-foreground transition-colors hover:from-primary-hover focus-visible:outline-2 md:h-10 md:rounded-none md:bg-primary md:bg-none md:text-[15px]"
-            >
-              {t('purchase.cart.checkout')}
-            </Link>
-            <Link
-              to="/"
-              hash="mercado"
-              className="hidden text-center text-[15px] text-highlight hover:text-primary-hover md:block"
-            >
-              {t('purchase.cart.continue')}
-            </Link>
-          </aside>
+              <Link
+                to="/pagamento"
+                className="grid h-[60px] place-items-center rounded-full bg-gradient-to-r from-primary to-[#b97c48] text-base font-bold text-primary-foreground transition-colors hover:from-primary-hover focus-visible:outline-2 md:h-10 md:rounded-none md:bg-primary md:bg-none md:text-[15px]"
+              >
+                {t('purchase.cart.checkout')}
+              </Link>
+              <Link
+                to="/"
+                hash="mercado"
+                className="hidden text-center text-[15px] text-highlight hover:text-primary-hover md:block"
+              >
+                {t('purchase.cart.continue')}
+              </Link>
+            </aside>
+          </MobileActionBar>
         </div>
       )}
 

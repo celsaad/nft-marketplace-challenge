@@ -21,7 +21,7 @@ export function QuoteTotals({
   if (!quote) return <QuoteTotalsSkeleton className={className} />
   const row = cn(
     'flex items-baseline justify-between gap-4',
-    size === 'large' ? 'text-lg' : 'text-[15px]',
+    size === 'large' ? 'text-[15px] [&>dd]:text-base' : 'text-[15px]',
     // Desktop (Figma): labels 15 px, amounts 18 px.
     'md:text-[15px] md:[&>dd]:text-lg',
   )
@@ -55,7 +55,7 @@ export function QuoteTotals({
       <div
         className={cn(
           'flex items-baseline justify-between gap-4 font-bold',
-          size === 'large' ? 'text-2xl md:text-base' : 'text-base',
+          'text-base',
           'md:[&>dd]:text-lg',
         )}
       >

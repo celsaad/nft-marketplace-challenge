@@ -69,6 +69,10 @@
 }
 
 @layer base {
+  /* A screen with the Figma's mobile action panel has no tab bar (src/ui/mobile-action-bar.tsx). */
+  html[data-action-bar] [data-tab-bar] {
+    display: none;
+  }
   * {
     @apply border-border outline-ring/60;
   }

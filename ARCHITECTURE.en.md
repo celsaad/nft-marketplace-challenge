@@ -229,7 +229,7 @@ The Figma defines the visual identity; the brief defines the behavior. Where the
 
 **Out of scope:** Criadores, Aprenda, blog, newsletter, social networks, the mobile scan button, footer links, social login and "esqueceu a senha". They render as drawn, but lead to a "Not available in this demo" page or show a notice. None of them pretends to have worked.
 
-**Mobile.** The Figma's mobile frames have no top bar. The app keeps a compact one with the logo, language switch, cart and account, because the frames offer no other place to switch language, log in or log out. The tab bar shows on every mobile screen (the Figma drops it on the detail, cart and checkout pages), so navigation is the same across the app. On the detail page, buying sits in the page flow rather than in a fixed bar.
+**Mobile.** The Figma's mobile frames have no top bar. The app keeps a compact one with the logo, language switch, cart and account, because the frames offer no other place to switch language, log in or log out. As in the Figma, the detail, cart and checkout pages swap the tab bar for a fixed action panel at the bottom (buying, the cart summary, the confirmation with the total), in `src/ui/mobile-action-bar.tsx`; the top bar and the back button keep navigation. The panel publishes its height as `--bottom-bar`, which keeps the page's end and the Mock Lab button clear of it, so nothing hides behind it. On mobile the Mock Lab button is an icon only, so it covers less of the content.
 
 **Checkout breadcrumb.** "Início / Carrinho / Pagamento" (the Figma has "Mercado" in the middle), because it's the actual way back.
 

@@ -100,14 +100,14 @@ export function CouponForm({
           aria-invalid={Boolean(error) || undefined}
           aria-describedby={error ? errorId : undefined}
           className={cn(
-            'h-14 min-w-0 flex-1 rounded-l-full border border-r-0 border-input bg-transparent px-6 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 md:h-10 md:rounded-l-none md:border-primary/70 md:px-2 md:text-xs',
+            'h-[50px] min-w-0 flex-1 rounded-l-full border border-r-0 border-input bg-transparent px-5 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 md:h-10 md:rounded-l-none md:border-primary/70 md:px-2 md:text-xs',
             error && 'border-destructive md:border-destructive',
           )}
         />
         <button
           type="submit"
           disabled={apply.isPending}
-          className="-ml-6 inline-flex h-14 items-center gap-2 rounded-full bg-gradient-to-r from-primary to-[#b97c48] px-7 text-lg font-bold text-primary-foreground transition-colors hover:from-primary-hover disabled:opacity-70 md:ml-0 md:h-10 md:rounded-none md:bg-primary md:bg-none md:px-5 md:text-[15px]"
+          className="-ml-6 inline-flex h-[50px] items-center gap-2 rounded-full bg-gradient-to-r from-primary to-[#b97c48] px-6 text-[15px] font-bold text-foreground md:text-primary-foreground transition-colors hover:from-primary-hover disabled:opacity-70 md:ml-0 md:h-10 md:rounded-none md:bg-primary md:bg-none md:px-5 md:text-[15px]"
         >
           {apply.isPending && (
             <Loader2Icon aria-hidden className="size-4 animate-spin motion-reduce:animate-none" />

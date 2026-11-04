@@ -102,10 +102,11 @@ export function MockLab({ api }: { api: MockApi }) {
         <Button
           size="sm"
           variant="outline"
-          className="fixed bottom-24 left-4 z-50 border-primary bg-card text-highlight shadow-lg md:bottom-4"
+          aria-label="Mock Lab"
+          className="fixed bottom-[calc(var(--bottom-bar,4rem)+0.75rem)] left-3 z-50 size-9 border-primary bg-card p-0 text-highlight shadow-lg md:bottom-4 md:left-4 md:size-auto md:px-3"
         >
           <FlaskConicalIcon aria-hidden />
-          Mock Lab
+          <span className="hidden md:inline">Mock Lab</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-full overflow-y-auto sm:max-w-md">

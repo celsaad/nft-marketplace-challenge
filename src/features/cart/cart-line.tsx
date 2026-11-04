@@ -68,7 +68,7 @@ export function CartLineRow({
         <Link
           to="/nft/$nftId"
           params={{ nftId: line.nftId }}
-          className="truncate text-base font-bold hover:text-primary-hover"
+          className="truncate text-[15px] font-bold hover:text-primary-hover md:text-base"
         >
           {name}
         </Link>

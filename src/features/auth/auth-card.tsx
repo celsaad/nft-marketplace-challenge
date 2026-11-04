@@ -58,11 +58,11 @@ export function AuthCard({
             <XIcon aria-hidden className="size-5" />
           </button>
 
-          <p aria-hidden className="mb-24 text-center text-5xl font-bold tracking-[0.12em] md:hidden">
+          <p aria-hidden className="mb-24 text-center text-[32px] font-bold tracking-[0.12em] md:hidden">
             {t('brand.name')}
           </p>
 
-          <h1 id="auth-title" className="text-center text-2xl font-bold md:sr-only">
+          <h1 id="auth-title" className="text-center text-xl font-bold md:sr-only">
             {mode === 'login' ? t('account.auth.login') : mobileTitle}
           </h1>
 
@@ -111,12 +111,12 @@ export function AuthCard({
 function SocialLogin() {
   const t = useT()
   const social =
-    'flex h-12 w-full items-center justify-center gap-3 rounded-md border border-border text-sm font-medium text-muted-foreground transition-colors hover:border-primary hover:text-foreground md:h-10 md:text-[13px]'
+    'flex h-12 w-full items-center justify-center gap-3 rounded-md border border-border text-[13px] font-medium text-muted-foreground transition-colors hover:border-primary hover:text-foreground md:h-10 md:text-[13px]'
   return (
     <div className="mt-8 md:mt-6">
       <div className="flex items-center gap-5 md:gap-3">
         <span aria-hidden className="h-px flex-1 bg-border" />
-        <p className="text-sm md:text-[13px]">{t('account.auth.orContinueWith')}</p>
+        <p className="text-[13px]">{t('account.auth.orContinueWith')}</p>
         <span aria-hidden className="h-px flex-1 bg-border" />
       </div>
       <div className="mx-auto mt-4 flex max-w-[340px] flex-col gap-3">
@@ -168,5 +168,5 @@ function FacebookMark() {
 /** Shared look of the auth inputs: the Figma's taller, rounder fields on mobile. */
 export const authInput = cn('h-12 rounded-xl px-4 text-base md:h-10 md:rounded-md md:text-sm')
 export const authSubmit = cn(
-  'h-14 w-full rounded-xl text-lg font-bold hover:bg-primary-hover md:h-11 md:rounded-md md:text-sm',
+  'h-14 w-full rounded-xl text-base font-bold hover:bg-primary-hover md:h-11 md:rounded-md md:text-sm',
 )

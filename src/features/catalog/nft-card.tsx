@@ -43,7 +43,7 @@ export function NftCard({
           )}
         />
         {nft.rare && (
-          <span className="absolute top-5 left-1 rounded-tl-[1.25rem] bg-primary px-2 py-1 text-xs font-medium tracking-wide text-primary-foreground uppercase md:hidden">
+          <span className="absolute top-5 left-1 rounded-tl-[1.25rem] bg-primary px-2 py-1 text-[13px] font-medium tracking-wide text-primary-foreground uppercase md:hidden">
             {t('catalog.card.rare')}
           </span>
         )}
@@ -60,7 +60,7 @@ export function NftCard({
         />
       </div>
       <div className="flex flex-col gap-0.5 px-2 pt-2 md:px-0 md:pt-3">
-        <h3 className={cn('truncate text-sm', variant === 'grid' ? 'md:text-base' : 'md:text-[15px]')}>
+        <h3 className={cn('truncate text-[15px]', variant === 'grid' && 'md:text-base')}>
           <Link
             to="/nft/$nftId"
             params={{ nftId: nft.id }}
@@ -71,7 +71,7 @@ export function NftCard({
         </h3>
         <p
           className={cn(
-            'flex flex-wrap items-baseline gap-x-2 text-sm font-bold text-highlight',
+            'flex flex-wrap items-baseline gap-x-2 text-base font-bold text-highlight',
             variant === 'grid' ? 'md:text-lg' : 'md:text-base',
           )}
         >

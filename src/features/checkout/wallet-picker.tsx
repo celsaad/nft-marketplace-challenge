@@ -37,7 +37,7 @@ export function WalletPicker({
   return (
     <section aria-labelledby="wallet-picker-title" className="flex flex-col gap-4">
       <div className="flex items-baseline justify-between gap-4">
-        <h2 id="wallet-picker-title" className="text-lg font-bold md:mx-auto md:text-[17px]">
+        <h2 id="wallet-picker-title" className="text-base font-bold md:mx-auto md:text-[17px]">
           {t('purchase.checkout.walletAndNetwork')}
         </h2>
         <Link to="/carteiras" className="text-sm font-bold text-highlight hover:text-primary-hover md:hidden">

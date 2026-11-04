@@ -13,6 +13,7 @@ export function MobileTabBar() {
   const cartCount = useCartCount()
   return (
     <nav
+      data-tab-bar
       aria-label={t('nav.main')}
       className="fixed inset-x-0 bottom-0 z-40 rounded-t-3xl border-t border-border bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
     >

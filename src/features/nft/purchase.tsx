@@ -16,6 +16,7 @@ import { useT } from '@/lib/i18n'
 import { EthAmount } from '@/ui/eth'
 import { errorMessageKey } from '@/ui/failure'
 import { cn } from '@/ui/lib/utils'
+import { MobileActionBar } from '@/ui/mobile-action-bar'
 import { Button } from '@/ui/primitives/button'
 import {
   clampQuantity,
@@ -98,7 +99,7 @@ export function EditionPicker({ nft, purchase }: { nft: NftDetail; purchase: Pur
   const soldOutLabels = nft.editions.filter((e) => !isAvailable(e)).map((e) => purchase.label(e))
   return (
     <div className="flex flex-col gap-2">
-      <p id="edition-label" className="text-sm font-bold md:text-[15px]">
+      <p id="edition-label" className="text-[15px] font-bold">
         {t('catalog.nft.edition')}
       </p>
       <RadioGroupPrimitive.Root
@@ -115,7 +116,7 @@ export function EditionPicker({ nft, purchase }: { nft: NftDetail; purchase: Pur
             value={edition.id}
             disabled={!isAvailable(edition)}
             className={cn(
-              'min-h-8 rounded-full border border-border px-2.5 text-xs text-muted-foreground tabular-nums md:text-sm transition-colors hover:border-primary',
+              'min-h-8 rounded-full border border-border px-2.5 text-sm text-muted-foreground tabular-nums transition-colors hover:border-primary',
               'data-[state=checked]:border-primary data-[state=checked]:font-medium data-[state=checked]:text-highlight',
               'disabled:cursor-not-allowed disabled:text-subtle-foreground disabled:line-through disabled:opacity-60 disabled:hover:border-border',
               'md:min-h-7 md:px-2',
@@ -143,7 +144,7 @@ function Stepper({ purchase, disabled }: { purchase: Purchase; disabled: boolean
     <fieldset className="min-w-0">
       <legend className="sr-only">{t('catalog.nft.quantity')}</legend>
       <div className="flex items-center gap-3">
-        <span aria-hidden className="text-sm font-bold md:hidden">
+        <span aria-hidden className="text-[15px] font-medium text-muted-foreground md:hidden">
           {t('catalog.nft.quantityShort')}
         </span>
         <button
@@ -202,15 +203,15 @@ export function PurchasePanel({
               : t('catalog.nft.editionAvailable', { count: edition?.available ?? 0 })
 
   return (
-    <div
+    <MobileActionBar
       className={cn(
-        'flex flex-col gap-3 rounded-t-[2rem] bg-card px-4 pt-5 pb-5 max-md:-mx-4 md:rounded-none md:bg-transparent md:p-0',
+        'flex flex-col gap-3 rounded-t-[2rem] bg-card px-6 pt-5 pb-5 md:rounded-none md:bg-transparent md:p-0',
         className,
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-4">
         <Stepper purchase={purchase} disabled={blocked} />
-        <EthAmount value={nft.price} className="text-2xl font-bold text-highlight md:hidden" />
+        <EthAmount value={nft.price} className="text-xl font-bold text-highlight md:hidden" />
         <div className="hidden items-center gap-2 md:flex">
           <Button
             type="button"
@@ -272,6 +273,6 @@ export function PurchasePanel({
           </Link>
         </Button>
       </div>
-    </div>
+    </MobileActionBar>
   )
 }
