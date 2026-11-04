@@ -28,7 +28,7 @@ export function Footer() {
   const t = useT()
 
   return (
-    <footer className="mx-auto mt-24 mb-[calc(var(--bottom-bar,4rem)+1rem)] max-w-[1248px] px-4 md:mb-0 md:px-6">
+    <footer className="mx-auto mt-24 mb-[calc(var(--bottom-bar,6rem)+1rem)] max-w-[1248px] px-4 md:mb-0 md:px-6">
       <div className="grid gap-8 rounded-t-lg bg-card p-6 md:grid-cols-4 md:p-10">
         {FEATURES.map((feature) => (
           <section

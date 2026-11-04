@@ -103,7 +103,7 @@ export function MockLab({ api }: { api: MockApi }) {
           size="sm"
           variant="outline"
           aria-label="Mock Lab"
-          className="fixed bottom-[calc(var(--bottom-bar,4rem)+0.75rem)] left-3 z-50 size-9 border-primary bg-card p-0 text-highlight shadow-lg md:bottom-4 md:left-4 md:size-auto md:px-3"
+          className="fixed bottom-[calc(var(--bottom-bar,6rem)+0.75rem)] left-3 z-50 size-9 border-primary bg-card p-0 text-highlight shadow-lg md:bottom-4 md:left-4 md:size-auto md:px-3"
         >
           <FlaskConicalIcon aria-hidden />
           <span className="hidden md:inline">Mock Lab</span>

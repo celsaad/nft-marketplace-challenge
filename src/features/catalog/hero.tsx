@@ -10,6 +10,10 @@ import { Button } from '@/ui/primitives/button'
 import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from '@/ui/primitives/carousel'
 import { CarouselDots, useCarouselState } from './carousel-dots'
 
+/** Mobile hero circle: 248 px, #dd9a5f at 43% fading to #d28a4c at 4%, as in the Figma. */
+const heroCircle =
+  'pointer-events-none absolute size-[248px] rounded-full bg-[linear-gradient(160deg,rgb(221_154_95/0.43),rgb(210_138_76/0.04))] md:hidden'
+
 const SLIDES = [
   { art: 'figma/emerald-ape', inset: 'figma/sage-gorilla' },
   { art: 'figma/golden-monkey', inset: 'figma/ivory-ape' },
@@ -39,12 +43,10 @@ export function Hero() {
               aria-label={t('catalog.hero.slide', { n: i + 1, total: SLIDES.length })}
               inert={i !== selected}
             >
-              <div className="relative grid min-h-48 pb-9 grid-cols-[minmax(0,1fr)_40%] items-center gap-3 overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#5a3a24] via-[#3a2416] to-[#2a1a12] p-4 pr-3 md:grid-cols-[minmax(0,1fr)_minmax(0,40%)] md:gap-10 lg:grid-cols-[minmax(0,1fr)_450px] lg:gap-12 md:rounded-none md:bg-none md:p-0 md:py-6 md:pb-6">
-                {/* Soft circles from the mobile Figma; decorative. */}
-                <span
-                  aria-hidden
-                  className="absolute top-1/2 left-1/3 size-72 -translate-y-1/3 rounded-full bg-white/5 md:hidden"
-                />
+              <div className="relative grid min-h-48 pb-9 grid-cols-[minmax(0,1fr)_40%] items-center gap-3 overflow-hidden rounded-[30px] bg-[linear-gradient(135deg,rgb(210_138_76/0.2),rgb(210_138_76/0.1))] p-4 pr-3 md:grid-cols-[minmax(0,1fr)_minmax(0,40%)] md:gap-10 lg:grid-cols-[minmax(0,1fr)_450px] lg:gap-12 md:rounded-none md:bg-none md:p-0 md:py-6 md:pb-6">
+                {/* The mobile Figma's two overlapping circles (Ellipse 49 and 50); decorative. */}
+                <span aria-hidden className={cn(heroCircle, '-top-[31px] -left-20')} />
+                <span aria-hidden className={cn(heroCircle, '-top-2.5 left-[73px]')} />
                 <div className="relative flex flex-col gap-2 md:gap-4 md:pl-10">
                   <p className="text-xs font-medium text-foreground md:text-sm">
                     {t('catalog.hero.welcome')}
