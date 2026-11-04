@@ -135,7 +135,7 @@ Outras limitações: só o namespace padrão, sem callbacks de confirmação (ac
 
 ## 11. Acessibilidade
 
-Navegação por teclado com foco visível e link "Pular para o conteúdo"; foco preso e devolvido ao gatilho em diálogos e gavetas (shadcn/Radix); rótulos e erros ligados aos campos por `aria-describedby` (`FormField`); mudanças em tempo real e resultados de ações anunciados numa região `aria-live` e em toasts; skeletons com `role="status"` e brilho que respeita `prefers-reduced-motion`; textos alternativos nas imagens dos NFTs; estados que não dependem só de cor; sem rolagem horizontal em 390, 768 e 1440 px.
+Navegação por teclado com foco visível e link "Pular para o conteúdo"; foco preso e devolvido ao gatilho em diálogos e gavetas (shadcn/Radix); rótulos e erros ligados aos campos por `aria-describedby` (`FormField`); mudanças em tempo real e resultados de ações anunciados numa região `aria-live` e em toasts; skeletons com `role="status"` e brilho que respeita `prefers-reduced-motion`; textos alternativos nas imagens dos NFTs; estados que não dependem só de cor; sem rolagem horizontal em 390, 768 e 1440 px, nem em 320 px, a largura de um zoom de 400% em 1280 px, sem perda de conteúdo (verificado em `e2e/layout.spec.ts`).
 
 Na pasta `src/ui/primitives/` (componentes gerados pelo CLI do shadcn) algumas regras de lint estão desligadas, porque o CLI segue os padrões ARIA da W3C para carrossel e breadcrumb, que essas regras marcariam. O código da aplicação mantém todas as regras.
 

@@ -1,5 +1,5 @@
-// Every screen in the brief, at 390, 768 and 1440 px, has no horizontal page overflow.
-// The mobile project (touch) covers phone and tablet widths; the desktop project covers 1440.
+// Every screen in the brief, at 320, 390, 768 and 1440 px, has no horizontal page overflow. 320 px
+// is 1280 px at 400% zoom (WCAG reflow); the mobile project (touch) covers it, phone and tablet.
 import type { Page } from '@playwright/test'
 import { isMobile } from './catalog/helpers'
 import { expect, open, test } from './fixtures'
@@ -41,7 +41,7 @@ test('no screen scrolls sideways at the phone, tablet and desktop widths', async
     ['/carteiras', (p) => p.getByRole('heading', { level: 1 })],
     ['/nao-existe', (p) => p.getByRole('heading', { name: 'Página não encontrada' })],
   ]
-  const widths = isMobile(info) ? [390, 768] : [1440]
+  const widths = isMobile(info) ? [320, 390, 768] : [1440]
 
   for (const width of widths) {
     // Sequential: one viewport, then one screen at a time.
